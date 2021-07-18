@@ -2,20 +2,22 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using WebApplication.Authentication;
 using WebApplication.Models;
 
 namespace WebApplication.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class TodoController : ControllerBase
     {
-        private readonly TodoContext _context;
+        private readonly ApplicationContext _context;
 
-        public TodoController(TodoContext context)
+        public TodoController(ApplicationContext context)
         {
             _context = context;
         }
@@ -30,13 +32,9 @@ namespace WebApplication.Controllers
         public async Task<ActionResult<TodoItem>> GetTodoItem(Guid id)
         {
             var todoItem = await _context.TodoItems.FindAsync(id);
-
-            if (todoItem == null)
-            {
-                return NotFound();
-            }
-
-            return todoItem;
+            return todoItem == null
+                ? NotFound()
+                : todoItem;
         }
 
         // PUT: api/Todo/5
