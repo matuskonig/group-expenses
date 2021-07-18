@@ -19,13 +19,13 @@ namespace WebApplication.Controllers
         {
             _context = context;
         }
-        
+
         [HttpGet]
         public async Task<ActionResult<IEnumerable<TodoItem>>> GetTodoItems()
         {
             return await _context.TodoItems.ToListAsync();
         }
-        
+
         [HttpGet("{id}")]
         public async Task<ActionResult<TodoItem>> GetTodoItem(Guid id)
         {
@@ -55,16 +55,9 @@ namespace WebApplication.Controllers
             {
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException) when (!TodoItemExists(id))
             {
-                if (!TodoItemExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return NotFound();
             }
 
             return NoContent();
@@ -78,7 +71,7 @@ namespace WebApplication.Controllers
             _context.TodoItems.Add(todoItem);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction($"{nameof(GetTodoItem)}", new { id = todoItem.Id }, todoItem);
+            return CreatedAtAction($"{nameof(GetTodoItem)}", new {id = todoItem.Id}, todoItem);
         }
 
         // DELETE: api/Todo/5
