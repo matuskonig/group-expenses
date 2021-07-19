@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApplication.Authentication;
@@ -15,23 +16,26 @@ namespace WebApplication.Controllers
     [ApiController]
     public class TodoController : ControllerBase
     {
-        private readonly ApplicationContext _context;
+        private readonly ApplicationContext context;
+        private UserManager<ApplicationUser> userManager;
 
-        public TodoController(ApplicationContext context)
+        public TodoController(ApplicationContext context, UserManager<ApplicationUser> userManager)
         {
-            _context = context;
+            this.context = context;
+            this.userManager = userManager;
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<TodoItem>>> GetTodoItems()
         {
-            return await _context.TodoItems.ToListAsync();
+            var user = await userManager.GetUserAsync(User);
+            return await context.TodoItems.ToListAsync();
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<TodoItem>> GetTodoItem(Guid id)
         {
-            var todoItem = await _context.TodoItems.FindAsync(id);
+            var todoItem = await context.TodoItems.FindAsync(id);
             return todoItem == null
                 ? NotFound()
                 : todoItem;
@@ -47,11 +51,11 @@ namespace WebApplication.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(todoItem).State = EntityState.Modified;
+            context.Entry(todoItem).State = EntityState.Modified;
 
             try
             {
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException) when (!TodoItemExists(id))
             {
@@ -66,8 +70,8 @@ namespace WebApplication.Controllers
         [HttpPost]
         public async Task<ActionResult<TodoItem>> PostTodoItem(TodoItem todoItem)
         {
-            _context.TodoItems.Add(todoItem);
-            await _context.SaveChangesAsync();
+            context.TodoItems.Add(todoItem);
+            await context.SaveChangesAsync();
 
             return CreatedAtAction($"{nameof(GetTodoItem)}", new {id = todoItem.Id}, todoItem);
         }
@@ -76,21 +80,21 @@ namespace WebApplication.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTodoItem(Guid id)
         {
-            var todoItem = await _context.TodoItems.FirstOrDefaultAsync(item => item.Id == id);
+            var todoItem = await context.TodoItems.FirstOrDefaultAsync(item => item.Id == id);
             if (todoItem == null)
             {
                 return NotFound();
             }
 
-            _context.TodoItems.Remove(todoItem);
-            await _context.SaveChangesAsync();
+            context.TodoItems.Remove(todoItem);
+            await context.SaveChangesAsync();
 
             return NoContent();
         }
 
         private bool TodoItemExists(Guid id)
         {
-            return _context.TodoItems.Any(e => e.Id == id);
+            return context.TodoItems.Any(e => e.Id == id);
         }
     }
 }
