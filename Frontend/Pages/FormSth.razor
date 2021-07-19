@@ -1,0 +1,58 @@
+﻿@page "/FormSth"
+@using System.ComponentModel.DataAnnotations
+<h3>FormSth</h3>
+
+<EditForm Model="@formData" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator/>
+    <ValidationSummary/>
+
+    <InputText id="name" @bind-Value="formData.Name"/>
+    <InputNumber id="age" @bind-Value="formData.Age"></InputNumber>
+    <button type="submit">Submit</button>
+</EditForm>
+
+<br/>
+
+<EditForm EditContext="@context" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator/>
+    <ValidationSummary/>
+    <InputText id="name2" @bind-Value="formData2.Name"/>
+    <InputNumber id="age2" @bind-Value="formData2.Age"/>
+    <InputFile OnChange="@LoadFiles"/>
+    <button type="submit">Submit</button>
+</EditForm>
+
+@code {
+
+    record Data
+    {
+        [Required]
+        [StringLength(10, ErrorMessage = "Too big")]
+        public string Name { get; set; }
+
+        public int Age { get; set; } = 0;
+        public IBrowserFile File { get; set; }
+    }
+
+    private Data formData = new() {Age = 50};
+    private Data formData2 = new() {Name = "asdasdasd", Age = 20};
+    private EditContext context;
+
+    private void HandleValidSubmit()
+    {
+        context.Validate();
+        Console.WriteLine(formData);
+        Console.WriteLine(formData2);
+    }
+
+    private void LoadFiles(InputFileChangeEventArgs e)
+    {
+        formData2.File = e.File;
+    }
+
+    protected override void OnInitialized()
+    {
+        context = new EditContext(formData2);
+    }
+
+}
