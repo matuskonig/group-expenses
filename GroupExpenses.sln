@@ -1,7 +1,5 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ASP.NETCoreWebApplication", "ASP.NETCoreWebApplication\ASP.NETCoreWebApplication.csproj", "{AB7943A1-ACAE-48BE-A719-D90EA053AAF1}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApplication", "WebApplication\WebApplication.csproj", "{D7E8A460-5980-4D7A-B2FD-BE596EDC8CC8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Frontend", "Frontend\Frontend.csproj", "{AABE85D4-CB5F-411E-9FF1-690B00681E8B}"
@@ -12,10 +10,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{AB7943A1-ACAE-48BE-A719-D90EA053AAF1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AB7943A1-ACAE-48BE-A719-D90EA053AAF1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AB7943A1-ACAE-48BE-A719-D90EA053AAF1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AB7943A1-ACAE-48BE-A719-D90EA053AAF1}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D7E8A460-5980-4D7A-B2FD-BE596EDC8CC8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D7E8A460-5980-4D7A-B2FD-BE596EDC8CC8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D7E8A460-5980-4D7A-B2FD-BE596EDC8CC8}.Release|Any CPU.ActiveCfg = Release|Any CPU
