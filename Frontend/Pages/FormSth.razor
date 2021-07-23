@@ -34,7 +34,7 @@
         public IBrowserFile File { get; set; }
     }
 
-    private Data formData = new() {Age = 50};
+    private Data formData = new();
     private Data formData2 = new() {Name = "asdasdasd", Age = 20};
     private EditContext context;
 
@@ -53,6 +53,7 @@
     protected override void OnInitialized()
     {
         context = new EditContext(formData2);
+        formData2 = formData with{ Name = "asdasdasd"};
     }
 
 }
