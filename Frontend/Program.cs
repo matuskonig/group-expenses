@@ -1,10 +1,12 @@
 using System;
 using System.Net.Http;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Text;
 using Frontend.Services;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -17,14 +19,13 @@ namespace Frontend
         {
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             builder.RootComponents.Add<App>("#app");
-
-            builder.Services.AddScoped(
-                _ => new HttpClient {BaseAddress = new Uri(builder.HostEnvironment.BaseAddress)});
-            builder.Services.AddScoped<ITodoService>(_ => new TodoService());
+            builder.Services
+                .AddScoped(
+                    _ => new HttpClient {BaseAddress = new Uri(builder.HostEnvironment.BaseAddress)})
+                .AddSingleton<AuthApiService>()
+                .AddScoped<ITodoService>(_ => new TodoService());
             var host = builder.Build();
 
-            // var service = host.Services.GetRequiredService<HttpClient>();
-            // Tu vieme zrobit init
             await host.RunAsync();
         }
     }
