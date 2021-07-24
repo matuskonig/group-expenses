@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -17,21 +16,19 @@ namespace Frontend.Services
             this.httpClient = httpClient;
         }
 
-        public async Task<JwtSecurityToken> Login(string email, string password)
+        public async Task<LoginResponse> Login(LoginRequest request)
         {
-            var data = new LoginRequest {Email = email, Password = password};
-            var response = await httpClient.PostAsJsonAsync("auth/login", data);
+            var response = await httpClient.PostAsJsonAsync("auth/login", request);
             if (response.StatusCode == HttpStatusCode.Unauthorized)
                 throw new UnauthorizedAccessException("Login failed");
             var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
             httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {result.Token}");
-            return new JwtSecurityToken(result.Token);
+            return result;
         }
 
-        public async Task Register(string email, string username, string password)
+        public async Task Register(RegisterRequest request)
         {
-            var data = new RegisterRequest {Email = email, Username = username, Password = password};
-            var response = await httpClient.PostAsJsonAsync("auth/register", data);
+            var response = await httpClient.PostAsJsonAsync("auth/register", request);
             if (!response.IsSuccessStatusCode)
                 throw new ArgumentException("something failed");
         }

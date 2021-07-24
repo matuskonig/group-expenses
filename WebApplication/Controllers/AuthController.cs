@@ -43,7 +43,8 @@ namespace WebApplication.Controllers
 
             var authClaims = new[]
             {
-                /*new Claim(JwtRegisteredClaimNames.GivenName, user.UserName), //TODO: mozno iba ako name*/
+                new Claim(ClaimTypes.Name, user.UserName),
+                new Claim(JwtRegisteredClaimNames.Email, model.Email),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             }.Concat(userRoles.Select(userRole => new Claim(ClaimTypes.Role, userRole)));
 
@@ -57,11 +58,16 @@ namespace WebApplication.Controllers
                 signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
             );
 
-            return Ok(new LoginResponse
-            {
-                Token = new JwtSecurityTokenHandler().WriteToken(token),
-                Expiration = token.ValidTo
-            });
+            return Ok(
+                new LoginResponse
+                {
+                    Token = new JwtSecurityTokenHandler().WriteToken(token),
+                    Expiration = token.ValidTo,
+                    User = new()
+                    {
+                        UserName = user.UserName
+                    }
+                });
         }
 
         [HttpPost]

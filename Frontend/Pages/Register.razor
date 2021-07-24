@@ -1,0 +1,25 @@
+﻿@page "/Register"
+@using Entities.AuthDto
+@using Frontend.Services
+@inject AuthApiService authService
+@inject NavigationManager navigationManager
+
+<h1>Register</h1>
+<EditForm Model="@request" OnValidSubmit="OnSubmit">
+    Email: <InputText id="email" @bind-Value="@request.Email"/>
+    Username: <InputText id="username" @bind-Value="@request.Username"/>
+    Password: <InputText id="password" @bind-Value="@request.Password"/>
+
+    <button type="submit">Submit</button>
+</EditForm>
+
+@code {
+    private RegisterRequest request = new();
+
+    private async Task OnSubmit()
+    {
+        await authService.Register(request);
+        navigationManager.NavigateTo("login");
+    }
+
+}

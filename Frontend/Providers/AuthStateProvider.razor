@@ -1,5 +1,35 @@
-﻿<h3>AuthStateProvider</h3>
+﻿@using Frontend.Services
+@using Entities.AuthDto
+@inject AuthApiService authApiService
+@inject NavigationManager navigationManager
+
+<CascadingValue Value="@this">
+    @ChildContent
+</CascadingValue>
 
 @code {
-    
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    [Parameter]
+    public RenderFragment NotLoggedInDefault { get; set; }
+
+    private LoginResponse response = null;
+    public bool IsLoggedIn => response?.Token != null; //TODO: nieco viac valid
+
+    public async Task Login(LoginRequest request)
+    {
+        response = await authApiService.Login(request);
+        navigationManager.NavigateTo("Dashboard");
+        StateHasChanged();
+    }
+
+    public void Logout()
+    {
+        authApiService.Logout();
+        response = null;
+        StateHasChanged();
+    }
+
 }
