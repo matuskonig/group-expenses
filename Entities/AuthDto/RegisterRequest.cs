@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace WebApplication.Dto
+namespace Entities.AuthDto
 {
-    public class RegisterDto
+    public class RegisterRequest
     {
         [Required] public string Username { get; set; }
         [EmailAddress] [Required] public string Email { get; set; }

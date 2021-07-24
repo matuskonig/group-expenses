@@ -5,13 +5,13 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using Entities.AuthDto;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using WebApplication.Authentication;
-using WebApplication.Dto;
 
 namespace WebApplication.Controllers
 {
@@ -23,17 +23,19 @@ namespace WebApplication.Controllers
         private readonly RoleManager<IdentityRole> roleManager;
         private readonly IConfiguration configuration;
 
-        public AuthController(UserManager<ApplicationUser> userManager_, RoleManager<IdentityRole> roleManager_,
-            IConfiguration configuration_)
+        public AuthController(
+            UserManager<ApplicationUser> userManager,
+            RoleManager<IdentityRole> roleManager,
+            IConfiguration configuration)
         {
-            userManager = userManager_;
-            roleManager = roleManager_;
-            configuration = configuration_;
+            this.userManager = userManager;
+            this.roleManager = roleManager;
+            this.configuration = configuration;
         }
 
         [HttpPost]
         [Route("login")]
-        public async Task<IActionResult> Login([FromBody] LoginDto model)
+        public async Task<IActionResult> Login([FromBody] LoginRequest model)
         {
             var user = await userManager.FindByEmailAsync(model.Email);
             if (user == null || !await userManager.CheckPasswordAsync(user, model.Password)) return Unauthorized();
@@ -55,17 +57,16 @@ namespace WebApplication.Controllers
                 signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
             );
 
-            return Ok(new
+            return Ok(new LoginResponse
             {
-                token = new JwtSecurityTokenHandler().WriteToken(token),
-                expiration = token.ValidTo
+                Token = new JwtSecurityTokenHandler().WriteToken(token),
+                Expiration = token.ValidTo
             });
-
         }
 
         [HttpPost]
         [Route("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterDto model)
+        public async Task<IActionResult> Register([FromBody] RegisterRequest model)
         {
             var userExists = await userManager.FindByEmailAsync(model.Email);
             if (userExists != null)
@@ -85,7 +86,7 @@ namespace WebApplication.Controllers
                 : StatusCode(StatusCodes.Status500InternalServerError);
         }
 
-        [HttpPost]
+        /*[HttpPost]
         [Route("register-admin")]
         public async Task<IActionResult> RegisterAdmin([FromBody] RegisterDto model)
         {
@@ -93,7 +94,7 @@ namespace WebApplication.Controllers
             if (userExists != null)
                 return StatusCode(
                     StatusCodes
-                        .Status500InternalServerError /*, new Response { Status = "Error", Message = "User already exists!" }*/);
+                        .Status500InternalServerError /*, new Response { Status = "Error", Message = "User already exists!" }#1#);
 
             ApplicationUser user = new ApplicationUser()
             {
@@ -105,7 +106,7 @@ namespace WebApplication.Controllers
             if (!result.Succeeded)
                 return StatusCode(
                     StatusCodes
-                        .Status500InternalServerError /*, new Response { Status = "Error", Message = "User creation failed! Please check user details and try again." }*/);
+                        .Status500InternalServerError /*, new Response { Status = "Error", Message = "User creation failed! Please check user details and try again." }#1#);
 
             if (!await roleManager.RoleExistsAsync(UserRoles.Admin))
                 await roleManager.CreateAsync(new IdentityRole(UserRoles.Admin));
@@ -117,7 +118,7 @@ namespace WebApplication.Controllers
                 await userManager.AddToRoleAsync(user, UserRoles.Admin);
             }
 
-            return Ok( /*new Response { Status = "Success", Message = "User created successfully!" }*/);
-        }
+            return Ok( /*new Response { Status = "Success", Message = "User created successfully!" }#1#);
+        }*/
     }
 }
