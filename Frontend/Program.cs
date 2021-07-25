@@ -10,26 +10,16 @@ namespace Frontend
 {
     public class Program
     {
-        private static Func<IServiceProvider, HttpClient> GetHttpClientConfiguration(
-            IConfiguration configuration) => _ =>
-        {
-            var baseAddress = configuration["BaseAddress"];
-            var client = new HttpClient
-            {
-                BaseAddress = new Uri(baseAddress),
-            };
-            /*client.DefaultRequestHeaders.Add("Access-Control-Allow-Origin", baseAddress);
-            client.DefaultRequestHeaders.Add("Access-Control-Allow-Credentials", "true");*/
-            return client;
-        };
-
         public static async Task Main(string[] args)
         {
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
             builder.RootComponents.Add<App>("#app");
             builder.Services
-                .AddScoped(GetHttpClientConfiguration(builder.Configuration))
+                .AddScoped(_ => new HttpClient
+                {
+                    BaseAddress = new Uri(builder.Configuration["BaseAddress"]),
+                })
                 .AddScoped<AuthApiService>()
                 .AddScoped<ITodoService, TodoService>();
             var host = builder.Build();
