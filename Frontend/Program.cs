@@ -14,13 +14,12 @@ namespace Frontend
             IConfiguration configuration) => _ =>
         {
             var baseAddress = configuration["BaseAddress"];
-            Console.WriteLine($"{baseAddress}, {new Uri(baseAddress)}");
             var client = new HttpClient
             {
                 BaseAddress = new Uri(baseAddress),
             };
-            client.DefaultRequestHeaders.Add("Access-Control-Allow-Origin", baseAddress);
-            client.DefaultRequestHeaders.Add("Access-Control-Allow-Credentials", "true");
+            /*client.DefaultRequestHeaders.Add("Access-Control-Allow-Origin", baseAddress);
+            client.DefaultRequestHeaders.Add("Access-Control-Allow-Credentials", "true");*/
             return client;
         };
 
