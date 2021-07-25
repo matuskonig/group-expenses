@@ -36,9 +36,9 @@ namespace WebApplication.Controllers
         public async Task<ActionResult<TodoItem>> GetTodoItem(Guid id)
         {
             var todoItem = await context.TodoItems.FindAsync(id);
-            return todoItem == null
-                ? NotFound()
-                : todoItem;
+            if (todoItem == null)
+                return NotFound();
+            return todoItem;
         }
 
         // PUT: api/Todo/5
