@@ -1,9 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
 
 namespace Entities.AuthDto
 {
     public class UserDto
     {
-        [Required] public string UserName { get; set; }
+        public string Id { get; set; }
+        public string UserName { get; set; }
+        public IEnumerable<FriendRequestDto> IncomingRequests { get; set; }
+        public IEnumerable<FriendRequestDto> SentRequests { get; set; }
     }
 }

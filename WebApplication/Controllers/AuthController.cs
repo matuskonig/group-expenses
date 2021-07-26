@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using WebApplication.Authentication;
+using WebApplication.Models;
 
 namespace WebApplication.Controllers
 {
@@ -22,20 +23,23 @@ namespace WebApplication.Controllers
         private readonly UserManager<ApplicationUser> userManager;
         private readonly RoleManager<IdentityRole> roleManager;
         private readonly IConfiguration configuration;
+        private readonly ApplicationContext context;
 
         public AuthController(
             UserManager<ApplicationUser> userManager,
             RoleManager<IdentityRole> roleManager,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            ApplicationContext context)
         {
             this.userManager = userManager;
             this.roleManager = roleManager;
             this.configuration = configuration;
+            this.context = context;
         }
 
         [HttpPost]
         [Route("login")]
-        public async Task<IActionResult> Login([FromBody] LoginRequest model)
+        public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest model)
         {
             var user = await userManager.FindByEmailAsync(model.Email);
             if (user == null || !await userManager.CheckPasswordAsync(user, model.Password)) return Unauthorized();
@@ -56,27 +60,38 @@ namespace WebApplication.Controllers
                 claims: authClaims,
                 signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
             );
-            return Ok(
-                new LoginResponse
+            return new LoginResponse
+            {
+                Token = new JwtSecurityTokenHandler().WriteToken(token),
+                Expiration = token.ValidTo,
+                User = new UserDto
                 {
-                    Token = new JwtSecurityTokenHandler().WriteToken(token),
-                    Expiration = token.ValidTo,
-                    User = new UserDto
-                    {
-                        UserName = user.UserName
-                    }
-                });
+                    Id = user.Id,
+                    UserName = user.UserName,
+                    IncomingRequests = user.IncomingRequests.Select(MapRelation),
+                    SentRequests = user.SentRequests.Select(MapRelation)
+                }
+            };
         }
+
+        private static FriendRequestDto MapRelation(FriendRequest relation) =>
+            new()
+            {
+                Created = relation.Created,
+                State = relation.State,
+                From = new UserDto {Id = relation.From.Id, UserName = relation.From.UserName},
+                To = new UserDto {Id = relation.To.Id, UserName = relation.To.UserName}
+            };
 
         [HttpPost]
         [Route("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterRequest model)
+        public async Task<ActionResult> Register([FromBody] RegisterRequest model)
         {
             var userExists = await userManager.FindByEmailAsync(model.Email);
             if (userExists != null)
                 return StatusCode(
                     StatusCodes
-                        .Status500InternalServerError /*new Response { Status = "Error", Message = "User already exists!" }*/);
+                        .Status500InternalServerError);
 
             var user = new ApplicationUser
             {
