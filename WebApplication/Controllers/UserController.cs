@@ -29,7 +29,7 @@ namespace WebApplication.Controllers
         }
 
         [HttpGet("sendNewRequest/{id}")]
-        public async Task<ActionResult> SendFriendRequest(string id)
+        public async Task<ActionResult> SendNewFriendRequest(string id)
         {
             try
             {
@@ -111,20 +111,22 @@ namespace WebApplication.Controllers
         {
             var currentUser = await userManager.GetUserAsync(User);
             var usersByUserName = request.UserName == null
-                ? Enumerable.Empty<ApplicationUser>()
+                ? null
                 : await context.Users
-                    .Where(applicationUser => applicationUser.UserName != currentUser.UserName &&
-                                              applicationUser.UserName.Contains(request.UserName))
+                    .Where(applicationUser => applicationUser.UserName.Contains(request.UserName) &&
+                                              applicationUser.UserName != currentUser.UserName
+                    )
                     .ToListAsync();
             return new SearchUserResponse
             {
-                Users = usersByUserName.Select(SerializerExtensions.Serialize)
+                UsersByUserName = usersByUserName?.Select(SerializerExtensions.Serialize)
             };
         }
+
         [HttpGet("current")]
         public async Task<ActionResult<UserDto>> GetCurrent()
         {
-            var userId =  userManager.GetUserId(User);
+            var userId = userManager.GetUserId(User);
             var user = await context.Users
                 .AsSingleQuery()
                 .Where(u => u.Id == userId)

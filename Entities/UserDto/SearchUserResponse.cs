@@ -4,6 +4,6 @@ namespace Entities.UserDto
 {
     public class SearchUserResponse
     {
-        public IEnumerable<AuthDto.UserDto> Users { get; set; }
+        public IEnumerable<AuthDto.UserDto> UsersByUserName { get; set; }
     }
 }
