@@ -43,6 +43,7 @@ namespace WebApplication.Controllers
         public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest model)
         {
             var user = await context.Users
+                .AsSplitQuery()
                 .Where(u => u.Email == model.Email)
                 .Include(applicationUser => applicationUser.IncomingRequests)
                 .ThenInclude(friendshipStatus => friendshipStatus.From)
