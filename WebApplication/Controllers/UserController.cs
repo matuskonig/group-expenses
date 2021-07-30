@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Entities.AuthDto;
 using Entities.Enums;
+using Entities.UserDto;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -67,7 +69,7 @@ namespace WebApplication.Controllers
                     .Include(status => status.To)
                     .FirstOrDefaultAsync();
                 var currentUser = await userManager.GetUserAsync(User);
-                
+
                 if (friendRequest == null || friendRequest.To != currentUser)
                 {
                     return BadRequest();
@@ -75,7 +77,7 @@ namespace WebApplication.Controllers
 
                 friendRequest.State = FriendRequestState.Accepted;
                 friendRequest.Modified = DateTime.Now;
-                
+
                 await context.SaveChangesAsync();
                 return Ok();
             }
@@ -101,6 +103,28 @@ namespace WebApplication.Controllers
             {
                 return BadRequest();
             }
+        }
+
+        [HttpPost("searchUser")]
+        public async Task<ActionResult<SearchUserResponse>> SearchFriendByName([FromBody] SearchUserRequest request)
+        {
+            var currentUser = await userManager.GetUserAsync(User);
+            var usersByUserName = request.UserName == null
+                ? Enumerable.Empty<ApplicationUser>()
+                : await context.Users
+                    .Where(applicationUser => applicationUser.UserName != currentUser.UserName &&
+                                              applicationUser.UserName.Contains(request.UserName))
+                    .ToListAsync();
+            var userDto = usersByUserName
+                .Select(user => new UserDto
+                {
+                    Id = user.Id,
+                    UserName = user.UserName,
+                });
+            return new SearchUserResponse
+            {
+                Users = userDto
+            };
         }
     }
 }
