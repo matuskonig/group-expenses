@@ -75,14 +75,7 @@ namespace WebApplication.Controllers
 
                 friendRequest.State = FriendRequestState.Accepted;
                 friendRequest.Modified = DateTime.Now;
-                var inverseRelation = new FriendshipStatus
-                {
-                    From = friendRequest.To, To = friendRequest.From,
-                    Created = DateTime.Now,
-                    Modified = DateTime.Now,
-                    State = FriendRequestState.Accepted
-                };
-                await context.FriendRequests.AddAsync(inverseRelation);
+                
                 await context.SaveChangesAsync();
                 return Ok();
             }
