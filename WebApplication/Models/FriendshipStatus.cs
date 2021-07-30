@@ -5,7 +5,7 @@ using WebApplication.Authentication;
 
 namespace WebApplication.Models
 {
-    public class FriendRequest
+    public sealed class FriendshipStatus
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid Id { get; set; }

@@ -9,6 +9,7 @@ using Entities.AuthDto;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using WebApplication.Authentication;
@@ -41,8 +42,15 @@ namespace WebApplication.Controllers
         [Route("login")]
         public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest model)
         {
-            var user = await userManager.FindByEmailAsync(model.Email);
-            if (user == null || !await userManager.CheckPasswordAsync(user, model.Password)) return Unauthorized();
+            var user = await context.Users
+                .Where(u => u.Email == model.Email)
+                .Include(applicationUser => applicationUser.IncomingRequests)
+                .ThenInclude(friendshipStatus => friendshipStatus.From)
+                .Include(applicationUser => applicationUser.SentRequests)
+                .ThenInclude(friendshipStatus => friendshipStatus.To)
+                .FirstOrDefaultAsync();
+            if (user == null || !await userManager.CheckPasswordAsync(user, model.Password))
+                return Unauthorized();
             var userRoles = await userManager.GetRolesAsync(user);
 
             var authClaims = new[]
@@ -68,13 +76,13 @@ namespace WebApplication.Controllers
                 {
                     Id = user.Id,
                     UserName = user.UserName,
-                    IncomingRequests = user.IncomingRequests.Select(MapRelation),
-                    SentRequests = user.SentRequests.Select(MapRelation)
+                    IncomingRequests = user.IncomingRequests?.Select(MapRelation),
+                    SentRequests = user.SentRequests?.Select(MapRelation)
                 }
             };
         }
 
-        private static FriendRequestDto MapRelation(FriendRequest relation) =>
+        private static FriendRequestDto MapRelation(FriendshipStatus relation) =>
             new()
             {
                 Created = relation.Created,

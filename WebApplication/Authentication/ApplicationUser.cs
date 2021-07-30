@@ -6,7 +6,7 @@ namespace WebApplication.Authentication
 {
     public class ApplicationUser : IdentityUser
     {
-        public ICollection<FriendRequest> IncomingRequests { get; set; }
-        public ICollection<FriendRequest> SentRequests { get; set; }
+        public virtual ICollection<FriendshipStatus> IncomingRequests { get; set; }
+        public virtual ICollection<FriendshipStatus> SentRequests { get; set; }
     }
 }

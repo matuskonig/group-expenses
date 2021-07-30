@@ -1,4 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Entities.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -21,34 +24,60 @@ namespace WebApplication.Controllers
             this.context = context;
         }
 
-        [HttpGet("addFriend/{id}")]
+        [HttpGet("sendNewRequest/{id}")]
         public async Task<ActionResult> SendFriendRequest(string id)
         {
-            /*var user = await userManager.GetUserAsync(User);
-            var other = await context.Users.FirstOrDefaultAsync(u => u.Id == id);
-            if (other == null)
+            try
+            {
+                var user = await userManager.GetUserAsync(User);
+                var other = await context.Users.FindAsync(id);
+                var relation = new FriendshipStatus
+                    {From = user, To = other, Created = DateTime.Now, State = FriendRequestState.WaitingForAccept};
+                context.FriendRequests.Add(relation);
+                await context.SaveChangesAsync();
+                return Ok();
+            }
+            catch (Exception)
+            {
                 return BadRequest();
-            var relation = new UserRelation {Since = DateTime.Now, From = user, To = other};
-            user.SendRequests.Add(relation);
-            other.ReceivedRequests.Add(relation);
-            await context.SaveChangesAsync();*/
-            return Ok();
+            }
         }
-        
-        /*public ActionResult AcceptFriendRequest()
-        {
-            throw new NotImplementedException();
-        }*/
-        
-        /*public ActionResult RejectFriendRequest()
-        {
-            throw new NotImplementedException();
-        }*/
 
-        /*[HttpGet("user/{id}")]*/
-        /*public ActionResult<UserDto> GetFriend(Guid id)
+        [HttpGet("acceptRequest/{id:guid}")]
+        public async Task<ActionResult> AcceptFriendRequest(Guid id)
         {
-            throw new NotImplementedException();
-        }*/
+            try
+            {
+                var friendRequest = await context.FriendRequests.FindAsync(id);
+                friendRequest.State = FriendRequestState.Accepted;
+                var inverseRelation = new FriendshipStatus
+                {
+                    From = friendRequest.To, To = friendRequest.From, Created = DateTime.Now,
+                    State = FriendRequestState.Accepted
+                };
+                await context.FriendRequests.AddAsync(inverseRelation);
+                await context.SaveChangesAsync();
+                return Ok();
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
+        }
+        [HttpGet("rejectRequest/{id:guid}")]
+        public async Task<ActionResult> RejectFriendRequest(Guid id)
+        {
+            try
+            {
+                var request = await context.FriendRequests.FindAsync(id);
+                request.State = FriendRequestState.Rejected;
+                await context.SaveChangesAsync();
+                return Ok();
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
+        }
     }
 }
