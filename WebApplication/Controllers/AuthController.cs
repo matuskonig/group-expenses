@@ -86,7 +86,9 @@ namespace WebApplication.Controllers
         private static FriendRequestDto MapRelation(FriendshipStatus relation) =>
             new()
             {
+                Id = relation.Id,
                 Created = relation.Created,
+                Modified = relation.Modified,
                 State = relation.State,
                 From = new UserDto {Id = relation.From.Id, UserName = relation.From.UserName},
                 To = new UserDto {Id = relation.To.Id, UserName = relation.To.UserName}

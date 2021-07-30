@@ -5,6 +5,7 @@ using Entities.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using WebApplication.Authentication;
 using WebApplication.Models;
 
@@ -31,10 +32,20 @@ namespace WebApplication.Controllers
             {
                 var user = await userManager.GetUserAsync(User);
                 var other = await context.Users.FindAsync(id);
-                if (other == null)
+                var possibleExistingRelation = await context.FriendRequests
+                    .FirstOrDefaultAsync(request =>
+                        request.From == user && request.To == other && request.State != FriendRequestState.Rejected);
+                if (other == null || possibleExistingRelation != null)
                     return BadRequest();
+
                 var relation = new FriendshipStatus
-                    {From = user, To = other, State = FriendRequestState.WaitingForAccept};
+                {
+                    From = user,
+                    To = other,
+                    State = FriendRequestState.WaitingForAccept,
+                    Created = DateTime.Now,
+                    Modified = DateTime.Now
+                };
                 context.FriendRequests.Add(relation);
                 await context.SaveChangesAsync();
                 return Ok();
@@ -50,11 +61,25 @@ namespace WebApplication.Controllers
         {
             try
             {
-                var friendRequest = await context.FriendRequests.FindAsync(id);
+                var friendRequest = await context.FriendRequests
+                    .Where(status => status.Id == id)
+                    .Include(status => status.From)
+                    .Include(status => status.To)
+                    .FirstOrDefaultAsync();
+                var currentUser = await userManager.GetUserAsync(User);
+                
+                if (friendRequest == null || friendRequest.To != currentUser)
+                {
+                    return BadRequest();
+                }
+
                 friendRequest.State = FriendRequestState.Accepted;
+                friendRequest.Modified = DateTime.Now;
                 var inverseRelation = new FriendshipStatus
                 {
-                    From = friendRequest.To, To = friendRequest.From, Created = DateTime.Now,
+                    From = friendRequest.To, To = friendRequest.From,
+                    Created = DateTime.Now,
+                    Modified = DateTime.Now,
                     State = FriendRequestState.Accepted
                 };
                 await context.FriendRequests.AddAsync(inverseRelation);
@@ -66,12 +91,15 @@ namespace WebApplication.Controllers
                 return BadRequest();
             }
         }
+
         [HttpGet("rejectRequest/{id:guid}")]
         public async Task<ActionResult> RejectFriendRequest(Guid id)
         {
             try
             {
                 var request = await context.FriendRequests.FindAsync(id);
+                if (request is not {State: FriendRequestState.WaitingForAccept})
+                    return BadRequest();
                 request.State = FriendRequestState.Rejected;
                 await context.SaveChangesAsync();
                 return Ok();
