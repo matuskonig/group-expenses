@@ -31,8 +31,10 @@ namespace WebApplication.Controllers
             {
                 var user = await userManager.GetUserAsync(User);
                 var other = await context.Users.FindAsync(id);
+                if (other == null)
+                    return BadRequest();
                 var relation = new FriendshipStatus
-                    {From = user, To = other, Created = DateTime.Now, State = FriendRequestState.WaitingForAccept};
+                    {From = user, To = other, State = FriendRequestState.WaitingForAccept};
                 context.FriendRequests.Add(relation);
                 await context.SaveChangesAsync();
                 return Ok();
