@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApplication.Authentication;
+using WebApplication.Helpers;
 using WebApplication.Models;
 
 namespace WebApplication.Controllers
@@ -59,7 +60,7 @@ namespace WebApplication.Controllers
         }
 
         [HttpGet("acceptRequest/{id:guid}")]
-        public async Task<ActionResult> AcceptFriendRequest(Guid id)
+        public async Task<ActionResult<FriendRequestDto>> AcceptFriendRequest(Guid id)
         {
             try
             {
@@ -79,7 +80,7 @@ namespace WebApplication.Controllers
                 friendRequest.Modified = DateTime.Now;
 
                 await context.SaveChangesAsync();
-                return Ok();
+                return friendRequest.Serialize();
             }
             catch (Exception)
             {
@@ -88,7 +89,7 @@ namespace WebApplication.Controllers
         }
 
         [HttpGet("rejectRequest/{id:guid}")]
-        public async Task<ActionResult> RejectFriendRequest(Guid id)
+        public async Task<ActionResult<FriendRequestDto>> RejectFriendRequest(Guid id)
         {
             try
             {
@@ -97,7 +98,7 @@ namespace WebApplication.Controllers
                     return BadRequest();
                 request.State = FriendRequestState.Rejected;
                 await context.SaveChangesAsync();
-                return Ok();
+                return request.Serialize();
             }
             catch (Exception)
             {
@@ -115,27 +116,11 @@ namespace WebApplication.Controllers
                     .Where(applicationUser => applicationUser.UserName != currentUser.UserName &&
                                               applicationUser.UserName.Contains(request.UserName))
                     .ToListAsync();
-            var userDto = usersByUserName
-                .Select(user => new UserDto
-                {
-                    Id = user.Id,
-                    UserName = user.UserName,
-                });
             return new SearchUserResponse
             {
-                Users = userDto
+                Users = usersByUserName.Select(SerializerExtensions.Serialize)
             };
         }
-        private static FriendRequestDto MapRelation(FriendshipStatus relation) =>
-            new()
-            {
-                Id = relation.Id,
-                Created = relation.Created,
-                Modified = relation.Modified,
-                State = relation.State,
-                From = new UserDto {Id = relation.From.Id, UserName = relation.From.UserName},
-                To = new UserDto {Id = relation.To.Id, UserName = relation.To.UserName}
-            };
         [HttpGet("current")]
         public async Task<ActionResult<UserDto>> GetCurrent()
         {
@@ -150,13 +135,7 @@ namespace WebApplication.Controllers
                 .FirstOrDefaultAsync();
             return user == null
                 ? BadRequest()
-                : new UserDto
-                {
-                    Id = user.Id,
-                    UserName = user.UserName,
-                    IncomingRequests = user.IncomingRequests?.Select(MapRelation),
-                    SentRequests = user.SentRequests?.Select(MapRelation)
-                };
+                : user.Serialize();
         }
     }
 }
