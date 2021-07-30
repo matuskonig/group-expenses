@@ -9,7 +9,6 @@ using Entities.AuthDto;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using WebApplication.Authentication;
@@ -42,14 +41,7 @@ namespace WebApplication.Controllers
         [Route("login")]
         public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest model)
         {
-            var user = await context.Users
-                .AsSingleQuery()
-                .Where(u => u.Email == model.Email)
-                .Include(applicationUser => applicationUser.IncomingRequests)
-                .ThenInclude(friendshipStatus => friendshipStatus.From)
-                .Include(applicationUser => applicationUser.SentRequests)
-                .ThenInclude(friendshipStatus => friendshipStatus.To)
-                .FirstOrDefaultAsync();
+            var user = await userManager.GetUserAsync(User);
             if (user == null || !await userManager.CheckPasswordAsync(user, model.Password))
                 return Unauthorized();
             var userRoles = await userManager.GetRolesAsync(user);
@@ -73,26 +65,8 @@ namespace WebApplication.Controllers
             {
                 Token = new JwtSecurityTokenHandler().WriteToken(token),
                 Expiration = token.ValidTo,
-                User = new UserDto
-                {
-                    Id = user.Id,
-                    UserName = user.UserName,
-                    IncomingRequests = user.IncomingRequests?.Select(MapRelation),
-                    SentRequests = user.SentRequests?.Select(MapRelation)
-                }
             };
         }
-
-        private static FriendRequestDto MapRelation(FriendshipStatus relation) =>
-            new()
-            {
-                Id = relation.Id,
-                Created = relation.Created,
-                Modified = relation.Modified,
-                State = relation.State,
-                From = new UserDto {Id = relation.From.Id, UserName = relation.From.UserName},
-                To = new UserDto {Id = relation.To.Id, UserName = relation.To.UserName}
-            };
 
         [HttpPost]
         [Route("register")]

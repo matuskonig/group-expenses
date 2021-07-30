@@ -20,6 +20,7 @@ namespace Frontend
                 {
                     BaseAddress = new Uri(builder.Configuration["BaseAddress"]),
                 })
+                .AddScoped<UserApiService>()
                 .AddScoped<AuthApiService>()
                 .AddScoped<ITodoService, TodoService>();
             var host = builder.Build();

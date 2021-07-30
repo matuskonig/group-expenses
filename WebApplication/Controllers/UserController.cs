@@ -126,5 +126,37 @@ namespace WebApplication.Controllers
                 Users = userDto
             };
         }
+        private static FriendRequestDto MapRelation(FriendshipStatus relation) =>
+            new()
+            {
+                Id = relation.Id,
+                Created = relation.Created,
+                Modified = relation.Modified,
+                State = relation.State,
+                From = new UserDto {Id = relation.From.Id, UserName = relation.From.UserName},
+                To = new UserDto {Id = relation.To.Id, UserName = relation.To.UserName}
+            };
+        [HttpGet("current")]
+        public async Task<ActionResult<UserDto>> GetCurrent()
+        {
+            var userId =  userManager.GetUserId(User);
+            var user = await context.Users
+                .AsSingleQuery()
+                .Where(u => u.Id == userId)
+                .Include(applicationUser => applicationUser.IncomingRequests)
+                .ThenInclude(friendshipStatus => friendshipStatus.From)
+                .Include(applicationUser => applicationUser.SentRequests)
+                .ThenInclude(friendshipStatus => friendshipStatus.To)
+                .FirstOrDefaultAsync();
+            return user == null
+                ? BadRequest()
+                : new UserDto
+                {
+                    Id = user.Id,
+                    UserName = user.UserName,
+                    IncomingRequests = user.IncomingRequests?.Select(MapRelation),
+                    SentRequests = user.SentRequests?.Select(MapRelation)
+                };
+        }
     }
 }

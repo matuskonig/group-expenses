@@ -1,5 +1,6 @@
 ﻿@using Frontend.Services
 @using Entities.AuthDto
+@implements IDisposable
 @inject AuthApiService authApiService
 @inject NavigationManager navigationManager
 
@@ -14,22 +15,37 @@
 
     [Parameter]
     public RenderFragment NotLoggedInDefault { get; set; }
-
-    private LoginResponse response = null;
-    public bool IsLoggedIn => response?.Token != null; //TODO: nieco viac valid
+    
+    public bool IsLoggedIn => authApiService.JwtSecurityToken?.ValidTo > DateTime.Now;
 
     public async Task Login(LoginRequest request)
     {
-        response = await authApiService.Login(request);
-        navigationManager.NavigateTo("Dashboard");
-        StateHasChanged();
+        try
+        {
+            await authApiService.Login(request);
+            navigationManager.NavigateTo("Dashboard");
+            Console.WriteLine(IsLoggedIn);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine("something is wrong");
+            Console.WriteLine(e.Message);
+        }
     }
 
+    
     public void Logout()
     {
         authApiService.Logout();
-        response = null;
-        StateHasChanged();
+    }
+    protected override void OnInitialized()
+    {
+        authApiService.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        authApiService.OnChange -= StateHasChanged;
     }
 
 }

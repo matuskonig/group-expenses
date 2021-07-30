@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -9,33 +10,49 @@ namespace Frontend.Services
 {
     public class AuthApiService
     {
-        private readonly HttpClient httpClient;
-
         public AuthApiService(HttpClient httpClient)
         {
             this.httpClient = httpClient;
         }
 
-        public async Task<LoginResponse> Login(LoginRequest request)
+        public async Task Login(LoginRequest request)
         {
             var response = await httpClient.PostAsJsonAsync("auth/login", request);
             if (response.StatusCode == HttpStatusCode.Unauthorized)
                 throw new UnauthorizedAccessException("Login failed");
-            var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
+            var result = await response.Content.ReadFromJsonAsync<LoginResponse>() ??
+                         throw new ArgumentException("result cannot be null");
+            JwtSecurityToken = new JwtSecurityToken(result.Token);
             httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {result.Token}");
-            return result;
         }
 
         public async Task Register(RegisterRequest request)
         {
             var response = await httpClient.PostAsJsonAsync("auth/register", request);
             if (!response.IsSuccessStatusCode)
-                throw new ArgumentException("something failed");
+                throw new ArgumentException("Registration failed");
         }
 
         public void Logout()
         {
+            JwtSecurityToken = null;
             httpClient.DefaultRequestHeaders.Remove("Authorization");
         }
+
+        private JwtSecurityToken _jwtSecurityToken;
+
+        public JwtSecurityToken JwtSecurityToken
+        {
+            get => _jwtSecurityToken;
+            set
+            {
+                _jwtSecurityToken = value;
+                OnChange?.Invoke();
+            }
+        }
+
+        public event Action OnChange;
+
+        private readonly HttpClient httpClient;
     }
 }
