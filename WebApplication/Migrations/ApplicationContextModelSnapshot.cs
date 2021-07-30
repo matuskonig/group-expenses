@@ -215,7 +215,6 @@ namespace WebApplication.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("Created")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("FromId")
@@ -223,7 +222,6 @@ namespace WebApplication.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("Modified")
-                        .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("TEXT");
 
                     b.Property<int>("State")
