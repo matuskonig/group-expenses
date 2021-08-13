@@ -58,7 +58,7 @@ namespace WebApplication.Controllers
                 return BadRequest();
             }
         }
-
+        [Authorize]
         [HttpGet("acceptRequest/{id:guid}")]
         public async Task<ActionResult<FriendRequestDto>> AcceptFriendRequest(Guid id)
         {
@@ -87,7 +87,7 @@ namespace WebApplication.Controllers
                 return BadRequest();
             }
         }
-
+        [Authorize]
         [HttpGet("rejectRequest/{id:guid}")]
         public async Task<ActionResult<FriendRequestDto>> RejectFriendRequest(Guid id)
         {
@@ -105,7 +105,7 @@ namespace WebApplication.Controllers
                 return BadRequest();
             }
         }
-
+        [Authorize]
         [HttpPost("searchUser")]
         public async Task<ActionResult<SearchUserResponse>> SearchFriendByName([FromBody] SearchUserRequest request)
         {
