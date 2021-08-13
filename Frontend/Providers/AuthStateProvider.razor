@@ -24,7 +24,6 @@
         {
             await authApiService.Login(request);
             navigationManager.NavigateTo("Dashboard");
-            Console.WriteLine(IsLoggedIn);
         }
         catch (Exception e)
         {
