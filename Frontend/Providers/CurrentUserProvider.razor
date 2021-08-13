@@ -1,0 +1,27 @@
+﻿@using Frontend.Services
+@using Entities.AuthDto
+@implements IDisposable
+@inject UserApiService userApiService
+
+<CascadingValue Value="@this">
+    @ChildContent
+</CascadingValue>
+
+@code {
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    public UserDto CurrentUser => userApiService.CurrentUser;
+
+    protected override void OnInitialized()
+    {
+        userApiService.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        userApiService.OnChange -= StateHasChanged;
+    }
+
+}

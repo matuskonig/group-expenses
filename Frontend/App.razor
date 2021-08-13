@@ -1,6 +1,7 @@
 @using Frontend.Providers
 <AuthStateProvider NotLoggedInDefault="@notLoggedIn">
-    <Router AppAssembly="@typeof(Program).Assembly" PreferExactMatches="@true">
+    <CurrentUserProvider>
+        <Router AppAssembly="@typeof(Program).Assembly" PreferExactMatches="@true">
             <Found Context="routeData">
                 <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)"/>
             </Found>
@@ -10,6 +11,7 @@
                 </LayoutView>
             </NotFound>
         </Router>
+    </CurrentUserProvider>
 </AuthStateProvider>
 
 @code
