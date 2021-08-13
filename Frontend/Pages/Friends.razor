@@ -1,6 +1,85 @@
 ﻿@page "/Friends"
-<h3>Friends</h3>
+@using Frontend.Providers
+@using Frontend.Services
+@using Entities.AuthDto
+@using Entities.Enums
+@using Frontend.Extensions
+@using Frontend.Components
+@inject UserApiService userApiService
+
+<Authorized>
+    <h2>Friends</h2>
+    <UserSearch/>
+    @if (IncomingRequests?.Any() ?? false)
+    {
+        <h2>Incoming requests</h2>
+        @foreach (var incomingRequest in IncomingRequests)
+        {
+            <p>
+                @incomingRequest.From.UserName
+                <button @onclick="@AcceptRequest(incomingRequest)">Accept</button>
+                <button @onclick="@RejectRequest(incomingRequest)">Reject</button>
+            </p>
+        }
+    }
+    @if (FriendUsers != null && FriendUsers.Any())
+    {
+        <h2>Friends</h2>
+        @foreach (var friendUser in FriendUsers)
+        {
+            <p>
+                @friendUser.UserName
+                <button @onclick="Unfriend(friendUser)">Reject</button>
+            </p>
+        }
+    }
+</Authorized>
+
 
 @code {
-    
+
+    [CascadingParameter]
+    public CurrentUserProvider UserProvider { get; set; }
+
+    [CascadingParameter]
+    public AuthStateProvider AuthStateProvider { get; set; }
+
+    private IEnumerable<FriendRequestDto> IncomingRequests =>
+        UserProvider?.CurrentUser?.IncomingRequests
+            ?.Where(request => request.State == FriendRequestState.WaitingForAccept);
+
+
+    private IEnumerable<UserDto> FriendUsers => UserProvider?.CurrentUser?.Friends();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (AuthStateProvider.IsLoggedIn)
+            await userApiService.LoadCurrent();
+    }
+
+    private Func<Task> AcceptRequest(FriendRequestDto friendRequest) => async () =>
+    {
+        await userApiService.AcceptFriendRequest(friendRequest);
+        await userApiService.LoadCurrent();
+    };
+
+    private Func<Task> RejectRequest(FriendRequestDto friendRequestDto) => () =>
+    {
+        return userApiService.RejectFriendRequest(friendRequestDto)
+            .ContinueWith(_ => userApiService.LoadCurrent());
+    };
+
+    private Func<Task> Unfriend(UserDto user) => async () =>
+    {
+        var possibleSentRequest = userApiService.CurrentUser.SentRequests
+            .FirstOrDefault(request => request.To.Id == user.Id && request.State == FriendRequestState.Accepted);
+        var possibleReceivedRequest = userApiService.CurrentUser.IncomingRequests
+            .FirstOrDefault(request => request.From.Id == user.Id && request.State == FriendRequestState.Accepted);
+        var possibleRequest = possibleSentRequest ?? possibleReceivedRequest;
+        if (possibleRequest == null) 
+            return;
+        await userApiService.RejectFriendRequest(possibleRequest);
+        await userApiService.LoadCurrent();
+    };
+
 }
