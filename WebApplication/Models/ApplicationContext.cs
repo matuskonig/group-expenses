@@ -8,6 +8,9 @@ namespace WebApplication.Models
     {
         public DbSet<TodoItem> TodoItems { get; set; }
         public DbSet<FriendshipStatus> FriendRequests { get; set; }
+        public DbSet<SinglePurposeUserGroup> UserGroups { get; set; }
+        public DbSet<UnidirectionalPaymentGroup> PaymentGroups { get; set; }
+        public DbSet<SinglePayment> SinglePayments { get; set; }
 
         public ApplicationContext(DbContextOptions<ApplicationContext> options) : base(options)
         {
