@@ -41,7 +41,7 @@ namespace WebApplication.Controllers
         [Route("login")]
         public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest model)
         {
-            var user = await userManager.GetUserAsync(User);
+            var user = await userManager.FindByEmailAsync(model.Email);
             if (user == null || !await userManager.CheckPasswordAsync(user, model.Password))
                 return Unauthorized();
             var userRoles = await userManager.GetRolesAsync(user);
