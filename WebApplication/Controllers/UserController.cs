@@ -123,6 +123,7 @@ namespace WebApplication.Controllers
             };
         }
 
+        [Authorize]
         [HttpGet("current")]
         public async Task<ActionResult<UserDto>> GetCurrent()
         {

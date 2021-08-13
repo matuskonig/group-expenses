@@ -37,8 +37,7 @@ namespace WebApplication.Controllers
             this.context = context;
         }
 
-        [HttpPost]
-        [Route("login")]
+        [HttpPost("login")]
         public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest model)
         {
             var user = await userManager.FindByEmailAsync(model.Email);
@@ -68,8 +67,7 @@ namespace WebApplication.Controllers
             };
         }
 
-        [HttpPost]
-        [Route("register")]
+        [HttpPost("register")]
         public async Task<ActionResult> Register([FromBody] RegisterRequest model)
         {
             var userExists = await userManager.FindByEmailAsync(model.Email);
