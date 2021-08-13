@@ -34,17 +34,17 @@ namespace WebApplication.Controllers
             try
             {
                 var user = await userManager.GetUserAsync(User);
-                var other = await context.Users.FindAsync(id);
+                var otherUser = await context.Users.FindAsync(id);
                 var possibleExistingRelation = await context.FriendRequests
                     .FirstOrDefaultAsync(request =>
-                        request.From == user && request.To == other && request.State != FriendRequestState.Rejected);
-                if (other == null || possibleExistingRelation != null)
+                        request.From == user && request.To == otherUser && request.State != FriendRequestState.Rejected);
+                if (otherUser == null || possibleExistingRelation != null || user.Id == otherUser.Id)
                     return BadRequest();
 
                 var relation = new FriendshipStatus
                 {
                     From = user,
-                    To = other,
+                    To = otherUser,
                     State = FriendRequestState.WaitingForAccept,
                     Created = DateTime.Now,
                     Modified = DateTime.Now
@@ -94,7 +94,7 @@ namespace WebApplication.Controllers
             try
             {
                 var request = await context.FriendRequests.FindAsync(id);
-                if (request is not {State: FriendRequestState.WaitingForAccept})
+                if(request == null || request.State == FriendRequestState.Rejected)
                     return BadRequest();
                 request.State = FriendRequestState.Rejected;
                 await context.SaveChangesAsync();
@@ -119,7 +119,7 @@ namespace WebApplication.Controllers
                     .ToListAsync();
             return new SearchUserResponse
             {
-                UsersByUserName = usersByUserName?.Select(SerializerExtensions.Serialize)
+                UsersByUserName = usersByUserName?.Select(user => user.Serialize())
             };
         }
 
