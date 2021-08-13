@@ -16,6 +16,7 @@ namespace WebApplication.Models
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
+            base.OnModelCreating(builder);
             builder.Entity<FriendshipStatus>(entity =>
             {
                 entity.HasOne(friendRequest => friendRequest.To)
@@ -25,7 +26,6 @@ namespace WebApplication.Models
                     .WithMany(u => u.SentRequests)
                     .IsRequired();
             });
-            base.OnModelCreating(builder);
         }
     }
 }
