@@ -1,0 +1,40 @@
+﻿@using Entities.AuthDto
+@using Frontend.Services
+@inject UserApiService userApiService
+
+
+<EditForm Model="@model" OnValidSubmit="@OnValidSubmit">
+    <InputText @bind-Value="@model.UserName"/>
+    <button type="submit">Search</button>
+</EditForm>
+@if (foundUsers?.Any() ?? false)
+{
+    foreach (var user in foundUsers)
+    {
+        <p>
+            @user.UserName - <button @onclick="SendRequest(user)">Send request</button>
+        </p>
+    }
+}
+
+@code {
+    private IEnumerable<UserDto> foundUsers; //TODO: toto robilo problemy
+    private FormModel model = new();
+
+    private async Task OnValidSubmit()
+    {
+        foundUsers = await userApiService.SearchFriendByName(model.UserName);
+    }
+
+    private Action SendRequest(UserDto user) => async () =>
+    {
+        await userApiService.SendNewFriendRequest(user);
+        await userApiService.LoadCurrent();
+    };
+
+    record FormModel
+    {
+        public string UserName { get; set; }
+    }
+
+}
