@@ -35,8 +35,11 @@ namespace Frontend.Services
 
         public async Task LoadCurrent()
         {
-            var result = await httpClient.GetFromJsonAsync<UserDto>("user/current");
-            CurrentUser = result ?? CurrentUser;
+            var data = await httpClient.GetFromJsonAsync<UserDto>("user/current");
+            if (data != null)
+            {
+                CurrentUser = data;
+            }
         }
 
         public async Task SendNewFriendRequest(UserDto user)
