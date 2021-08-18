@@ -29,7 +29,7 @@ namespace WebApplication.Controllers
         }
 
         [HttpGet("sendNewRequest/{id}")]
-        public async Task<ActionResult> SendNewFriendRequest(string id)
+        public async Task<ActionResult<FriendRequestDto>> SendNewFriendRequest(string id)
         {
             try
             {
@@ -51,7 +51,7 @@ namespace WebApplication.Controllers
                 };
                 context.FriendRequests.Add(relation);
                 await context.SaveChangesAsync();
-                return Ok();
+                return relation.Serialize();
             }
             catch (Exception)
             {
@@ -129,7 +129,7 @@ namespace WebApplication.Controllers
         {
             var userId = userManager.GetUserId(User);
             var user = await context.Users
-                .AsSingleQuery()
+                .AsSplitQuery()
                 .Where(u => u.Id == userId)
                 .Include(applicationUser => applicationUser.IncomingRequests)
                 .ThenInclude(friendshipStatus => friendshipStatus.From)
