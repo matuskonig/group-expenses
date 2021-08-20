@@ -1,0 +1,27 @@
+﻿@using Frontend.Services
+@using Entities.GroupDto
+@implements IDisposable
+@inject GroupService _groupService
+
+<CascadingValue Value="@this">
+    @ChildContent
+</CascadingValue>
+
+@code {
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    public IEnumerable<SinglePurposeUserGroupDto> UserGroups => _groupService.UserGroups;
+
+    protected override void OnInitialized()
+    {
+        _groupService.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        _groupService.OnChange -= StateHasChanged;
+    }
+
+}
