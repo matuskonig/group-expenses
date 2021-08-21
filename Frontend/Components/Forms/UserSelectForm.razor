@@ -1,0 +1,39 @@
+﻿@using Entities.AuthDto
+@using System.ComponentModel.DataAnnotations
+
+<EditForm Model="@_model" OnValidSubmit="@HandleSubmit">
+    <DataAnnotationsValidator/>
+    <ValidationSummary/>
+    <InputSelect @bind-Value="@_model.SelectedUser">
+        <option value=""></option>
+        @foreach (var user in Users)
+        {
+            <option value="@user.Id">@user.UserName</option>
+        }
+    </InputSelect>
+    <button type="submit">Add selected user</button>
+</EditForm>
+
+@code {
+
+    [Parameter]
+    public EventCallback<UserDto> OnSubmit { get; set; }
+
+    [Parameter]
+    public IEnumerable<UserDto> Users { get; set; }
+
+    private FormModel _model = new();
+
+    private async Task HandleSubmit()
+    {
+        var user = Users.FirstOrDefault(user => user.Id == _model.SelectedUser);
+        await OnSubmit.InvokeAsync(user);
+    }
+
+    private class FormModel
+    {
+        [Required(ErrorMessage = "User must be selected")]
+        public string SelectedUser { get; set; }
+    }
+
+}
