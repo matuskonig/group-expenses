@@ -12,7 +12,7 @@ namespace Frontend.Helpers
             _getter = getter;
         }
 
-        public bool Equals(TBase? x, TBase? y)
+        public bool Equals(TBase x, TBase y)
         {
             return EqualityComparer<TProperty>.Default.Equals(_getter(x), _getter(y));
         }
