@@ -2,7 +2,8 @@
 @using Frontend.Providers
 @using Entities.GroupDto
 @using Frontend.Components.Groups
-@using Frontend.Components.Dialogs
+@using Frontend.Services
+@inject UserApiService _userApiService
 
 @if (FoundGroup == null)
 {
@@ -12,25 +13,6 @@
 <GroupTitle Group="@FoundGroup"/>
 <GroupUsers Group="@FoundGroup"/>
 <GroupPayments Group="@FoundGroup"/>
-<OpenableDialog>
-    <Title>some title</Title>
-    <Opener>
-        <button @onclick="@context.OpenDialog">Add sth for fuck sake</button>
-    </Opener>
-    <ChildContent>
-        <OpenableDialog Context="otherContext">
-            <Title>some title2</Title>
-            <Opener >
-                <button @onclick="@otherContext.OpenDialog">Add sth for fuck sake</button>
-            </Opener>
-            <ChildContent >
-                <button @onclick="@otherContext.CloseDialog">Zavri ma dopiče</button>
-            </ChildContent>
-        </OpenableDialog>
-        <button @onclick="@context.CloseDialog">Zavri ma dopiče</button>
-    </ChildContent>
-</OpenableDialog>
-
 
 @code {
 
@@ -43,8 +25,9 @@
     private SinglePurposeUserGroupDto FoundGroup =>
         GroupServiceProvider.UserGroups.FirstOrDefault(group => group.Id == GroupId);
 
-    private void HandleSave()
+    protected override async Task OnInitializedAsync()
     {
-        
+        await _userApiService.LoadCurrent();
     }
+
 }
