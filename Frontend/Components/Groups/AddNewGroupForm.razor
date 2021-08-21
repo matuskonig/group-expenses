@@ -1,0 +1,30 @@
+﻿@using Frontend.Services
+@inject GroupService _groupService
+<h6>Add new group</h6>
+<EditForm Model="@_values" OnValidSubmit="@OnSubmit">
+    <label for="name">Group name: </label>
+    <InputText id="name" @bind-Value="@_values.Name"></InputText>
+    <button type="submit">Submit</button>
+</EditForm>
+
+@code {
+    private FormValues _values = new();
+
+    private void ResetFormModel()
+    {
+        _values = new FormValues();
+    }
+
+    private async Task OnSubmit()
+    {
+        await _groupService.AddNewGroup(_values.Name);
+        await _groupService.LoadAll();
+        ResetFormModel();
+    }
+    
+    private record FormValues
+    {
+        public string Name { get; set; }
+    }
+
+}
