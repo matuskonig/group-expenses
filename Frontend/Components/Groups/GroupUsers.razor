@@ -17,16 +17,16 @@
         @user.UserName <button @onclick="RemoveUserFromGroup(user)">&times;</button>
     </div>
 }
-<OpenableDialog Context="addUserDialog">
+<OpenableDialog>
     <Opener>
-        <button @onclick="addUserDialog.OpenDialog">Add new user</button>
+        <button @onclick="@context.OpenDialog">Add new user</button>
     </Opener>
     <Title>
         <h3>Add new user to group</h3>
     </Title>
     <ChildContent>
         <UserSelectForm
-            OnSubmit="user => HandleAddNewFriend(user, addUserDialog)"
+            OnSubmit="user => HandleAddNewFriend(user, context)"
             Users="@PossibleNewUsers()"/>
     </ChildContent>
 </OpenableDialog>
