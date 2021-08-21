@@ -1,0 +1,22 @@
+﻿@using Entities.GroupDto
+@foreach (var paymentGroup in Group.GroupPayments)
+{
+    <div>
+        <div>from: @paymentGroup.PaymentBy.UserName</div>
+        <div>
+            to:
+            @foreach (var singlePayment in paymentGroup.PaymentTargets)
+            {
+                <span>@singlePayment.Price @singlePayment.Target.UserName</span>
+            }
+        </div>
+    </div>
+}
+<h4>Payments</h4>
+
+@code {
+
+    [Parameter]
+    public SinglePurposeUserGroupDto Group { get; set; }
+
+}

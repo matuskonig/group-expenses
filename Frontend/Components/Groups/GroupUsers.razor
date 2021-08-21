@@ -1,0 +1,51 @@
+﻿@using Entities.GroupDto
+@using Entities.AuthDto
+@using Frontend.Services
+@using Frontend.Components.Forms
+@using Frontend.Extensions
+@using Frontend.Providers
+@using Frontend.Helpers
+@inject GroupService _groupService
+
+
+<h4>Users</h4>
+
+@foreach (var user in Group.GroupUsers)
+{
+    <div>
+        @user.UserName <button @onclick="RemoveUserFromGroup(user)">&times;</button>
+    </div>
+}
+<button> Add friend</button>
+<UserSelectForm OnSubmit="@HandleAddNewFriend"/>
+
+@code {
+    [CascadingParameter]
+    public CurrentUserProvider CurrentUserProvider { get; set; }
+    
+    [Parameter]
+    public SinglePurposeUserGroupDto Group { get; set; }
+
+    private async Task HandleAddNewFriend(UserDto user)
+    {
+        await _groupService.ModifyUserGroup(new SinglePurposeUserGroupDto
+        {
+            GroupUsers = Group.GroupUsers.Append(user)
+        });
+    }
+
+    private IEnumerable<UserDto> PossibleNewUsers => CurrentUserProvider
+        .CurrentUser
+        .Friends()
+        .Except(Group.GroupUsers, new PropertyEqualityComparer<UserDto,Guid>());
+
+    private Func<Task> RemoveUserFromGroup(UserDto userDto) => async () =>
+    {
+        await _groupService.ModifyUserGroup(new SinglePurposeUserGroupDto
+        {
+            GroupUsers = Group.GroupUsers.Except(new[] { userDto })
+        });
+        await _groupService.LoadAll();
+    };
+
+}
