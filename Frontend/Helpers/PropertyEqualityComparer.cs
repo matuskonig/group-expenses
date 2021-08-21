@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace WebApplication.Helpers
+namespace Frontend.Helpers
 {
     public class PropertyEqualityComparer<TBase, TProperty> : IEqualityComparer<TBase>
     {
