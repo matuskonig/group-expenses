@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Entities.GroupDto;
+using Frontend.Helpers;
 
 namespace Frontend.Services
 {
@@ -51,7 +52,7 @@ namespace Frontend.Services
 
         public async Task<SinglePurposeUserGroupDto> ModifyUserGroup(SinglePurposeUserGroupDto group)
         {
-            var response = await _httpClient.PostAsJsonAsync("group/modifyUserGroup", group);
+            var response = await _httpClient.PatchAsJsonAsync("group/modifyUserGroup", group);
             if (!response.IsSuccessStatusCode)
                 throw new Exception("sth went wrong");
             var data = await response.Content.ReadFromJsonAsync<SinglePurposeUserGroupDto>();
@@ -60,7 +61,7 @@ namespace Frontend.Services
 
         public async Task<UnidirectionalPaymentGroupDto> ModifyPaymentGroup(UnidirectionalPaymentGroupDto paymentGroup)
         {
-            var response = await _httpClient.PostAsJsonAsync("group/modifyPaymentGroup", paymentGroup);
+            var response = await _httpClient.PatchAsJsonAsync("group/modifyPaymentGroup", paymentGroup);
             if (!response.IsSuccessStatusCode)
                 throw new Exception("sth went wrong");
             var data = await response.Content.ReadFromJsonAsync<UnidirectionalPaymentGroupDto>();
@@ -69,7 +70,7 @@ namespace Frontend.Services
 
         public async Task<SinglePaymentDto> ModifySinglePayment(SinglePaymentDto payment)
         {
-            var response = await _httpClient.PostAsJsonAsync("group/modifySinglePayment", payment);
+            var response = await _httpClient.PatchAsJsonAsync("group/modifySinglePayment", payment);
             if (!response.IsSuccessStatusCode)
                 throw new Exception("something is wrong");
             var data = await response.Content.ReadFromJsonAsync<SinglePaymentDto>();
