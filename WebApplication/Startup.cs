@@ -68,8 +68,10 @@ namespace WebApplication
             {
                 app.UseCors(options =>
                 {
+                    // TODO: Fix cors
                     options.AllowAnyOrigin();
                     options.AllowAnyHeader();
+                    options.AllowAnyMethod();
                 });
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
