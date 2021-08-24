@@ -1,7 +1,7 @@
 ﻿@using Frontend.Services
 @using Entities.AuthDto
 @implements IDisposable
-@inject UserApiService userApiService
+@inject UserApiService _userApiService
 
 <CascadingValue Value="@this">
     @ChildContent
@@ -12,16 +12,15 @@
     [Parameter]
     public RenderFragment ChildContent { get; set; }
 
-    public UserDto CurrentUser => userApiService.CurrentUser;
+    public UserDto CurrentUser => _userApiService.CurrentUser;
 
     protected override void OnInitialized()
     {
-        userApiService.OnChange += StateHasChanged;
+        _userApiService.OnChange += StateHasChanged;
     }
 
     public void Dispose()
     {
-        userApiService.OnChange -= StateHasChanged;
+        _userApiService.OnChange -= StateHasChanged;
     }
-
 }

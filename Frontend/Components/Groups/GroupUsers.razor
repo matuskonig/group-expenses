@@ -2,6 +2,9 @@
 @using Entities.AuthDto
 @using Frontend.Services
 @using Frontend.Helpers
+@using Frontend.Components.Dialogs
+@using Frontend.Extensions
+@using Frontend.Providers
 @inject GroupService _groupService
 
 <h4>Users</h4>
@@ -12,13 +15,22 @@
         @user.UserName <button @onclick="RemoveUserFromGroup(user)">&times;</button>
     </div>
 }
-<AddNewFriendDialog Group="@Group"/>
+<UserSelectDialog
+    OpenerTitle="Add users to group"
+    DialogTitle="Add user"
+    Users="@GetPossibleNewUsers()"
+    OnSubmit="@HandleAddNewFriend"/>
 
 
 @code {
+    private PropertyEqualityComparer<UserDto, string> _userByIdComparer = new(user => user.Id);
+
     [Parameter]
     public SinglePurposeUserGroupDto Group { get; set; }
-    
+
+    [CascadingParameter]
+    public CurrentUserProvider CurrentUserProvider { get; set; }
+
     private Func<Task> RemoveUserFromGroup(UserDto userDto) => async () =>
     {
         var userComparer = new PropertyEqualityComparer<UserDto, string>(user => user.Id);
@@ -30,5 +42,24 @@
         });
         await _groupService.LoadAll();
     };
+
+    private IEnumerable<UserDto> GetPossibleNewUsers()
+    {
+        return CurrentUserProvider
+            ?.CurrentUser
+            ?.Friends()
+            ?.Except(Group.GroupUsers, _userByIdComparer)
+            .OrderBy(user => user.UserName) ?? Enumerable.Empty<UserDto>();
+    }
+
+    private async Task HandleAddNewFriend(UserDto user)
+    {
+        await _groupService.ModifyUserGroup(new SinglePurposeUserGroupDto
+        {
+            Id = Group.Id,
+            GroupUsers = Group.GroupUsers.Append(user)
+        });
+        await _groupService.LoadAll();
+    }
 
 }
