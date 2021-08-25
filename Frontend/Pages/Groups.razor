@@ -1,0 +1,37 @@
+﻿@page "/Groups"
+@inject NavigationManager _navigationManager
+@inject GroupService _groupService;
+@using Frontend.Providers
+@using Frontend.Services
+@using Frontend.Components.Groups
+
+<h3>Groups</h3>
+
+<AddNewGroupForm/>
+
+<div class="list-group">
+    @foreach (var group in GroupServiceProvider.UserGroups)
+    {
+        <li class="list-group-item">
+            <a onclick="@HandleGroupNavigation(group.Id)">@group.Name</a>
+        </li>
+    }
+</div>
+
+
+@code {
+
+    [CascadingParameter]
+    public GroupServiceProvider GroupServiceProvider { get; set; }
+
+    private Action HandleGroupNavigation(Guid groupId)
+    {
+        return () => _navigationManager.NavigateTo($"Group/{groupId}");
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await _groupService.LoadAll();
+    }
+
+}

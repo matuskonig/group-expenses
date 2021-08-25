@@ -3,7 +3,6 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Frontend.Services;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Frontend
@@ -22,6 +21,7 @@ namespace Frontend
                 })
                 .AddScoped<UserApiService>()
                 .AddScoped<AuthApiService>()
+                .AddScoped<GroupService>()
                 .AddScoped<ITodoService, TodoService>();
             var host = builder.Build();
             await host.RunAsync();

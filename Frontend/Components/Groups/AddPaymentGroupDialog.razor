@@ -1,0 +1,61 @@
+﻿@using Frontend.Components.Dialogs
+@using Entities.GroupDto
+@using Frontend.Providers
+@using Entities.AuthDto
+@using Frontend.Services
+@inject GroupService _groupService
+
+<PaymentGroupDialog
+    Group="@Group"
+    PaymentGroup="@_paymentGroup"
+    Title="Add new payment"
+    OnSubmit="@HandleSubmit"
+    OnEditPayment="@HandleEditPayment"
+    OnPayerUserSelect="@HandlePayerUserSelect"
+    OnRemoveExistingPayment="@HandleRemoveExistingPayment"
+    OnNewSinglePaymentAdded="@HandleNewSinglePaymentAdded"/>
+
+@code {
+
+    [Parameter]
+    public SinglePurposeUserGroupDto Group { get; set; }
+
+    private UnidirectionalPaymentGroupDto _paymentGroup = NewPaymentGroup();
+
+    private void HandleRemoveExistingPayment(SinglePaymentDto payment)
+    {
+        _paymentGroup.PaymentTargets = _paymentGroup.PaymentTargets.Except(new[] { payment });
+    }
+
+    private void HandleEditPayment(SinglePaymentDto paymentToEdit)
+    {
+        _paymentGroup.PaymentTargets = _paymentGroup.PaymentTargets.Select(payment => payment == paymentToEdit ? paymentToEdit : payment);
+    }
+
+    private static UnidirectionalPaymentGroupDto NewPaymentGroup() => new()
+    {
+        PaymentTargets = Enumerable.Empty<SinglePaymentDto>()
+    };
+
+    private async Task HandleSubmit()
+    {
+        await _groupService.ModifyUserGroup(new SinglePurposeUserGroupDto
+        {
+            Id = Group.Id,
+            GroupPayments = Group.GroupPayments.Append(_paymentGroup)
+        });
+        await _groupService.LoadAll();
+        _paymentGroup = NewPaymentGroup();
+    }
+
+    private void HandlePayerUserSelect(UserDto user)
+    {
+        _paymentGroup.PaymentBy = user;
+    }
+
+    private void HandleNewSinglePaymentAdded(SinglePaymentDto payment)
+    {
+        _paymentGroup.PaymentTargets = _paymentGroup.PaymentTargets.Append(payment);
+    }
+
+}

@@ -1,7 +1,7 @@
 ﻿@using Frontend.Services
-@using Entities.AuthDto
+@using Entities.GroupDto
 @implements IDisposable
-@inject UserApiService _userApiService
+@inject GroupService _groupService
 
 <CascadingValue Value="@this">
     @ChildContent
@@ -12,15 +12,16 @@
     [Parameter]
     public RenderFragment ChildContent { get; set; }
 
-    public UserDto CurrentUser => _userApiService.CurrentUser;
+    public IEnumerable<SinglePurposeUserGroupDto> UserGroups => _groupService.UserGroups;
 
     protected override void OnInitialized()
     {
-        _userApiService.OnChange += StateHasChanged;
+        _groupService.OnChange += StateHasChanged;
     }
 
     public void Dispose()
     {
-        _userApiService.OnChange -= StateHasChanged;
+        _groupService.OnChange -= StateHasChanged;
     }
+
 }

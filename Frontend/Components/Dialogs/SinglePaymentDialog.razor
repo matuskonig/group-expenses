@@ -1,0 +1,78 @@
+﻿@using Entities.GroupDto
+@using Entities.AuthDto
+@using Frontend.Providers
+
+<OpenableDialog Context="singlePaymentDialogContext">
+    <Opener>
+        <button @onclick="@singlePaymentDialogContext.OpenDialog">@OpenerTitle</button>
+    </Opener>
+    <Title>
+        <h3>@DialogTitle</h3>
+    </Title>
+    <ChildContent>
+        <div>
+            <EditForm Model="@_model">
+                <InputNumber @bind-Value="@_model.Price"></InputNumber>
+            </EditForm>
+        </div>
+
+        <div>
+            Payment to: @(_model?.Target?.UserName ?? "-")
+            <UserSelectDialog
+                SelectedUserId="@_model?.Target?.Id"
+                DialogTitle="Select payment target"
+                OpenerTitle="Select target"
+                Users="@GetPossibleUsers()"
+                OnSubmit="@ModelTargetChanged"/>
+        </div>
+
+        <button @onclick="() => HandleSubmit(singlePaymentDialogContext)">Submit</button>
+    </ChildContent>
+</OpenableDialog>
+
+@code {
+
+    [Parameter]
+    public string OpenerTitle { get; set; }
+
+    [Parameter]
+    public string DialogTitle { get; set; }
+
+    [Parameter]
+    public SinglePaymentDto SinglePayment { get; set; }
+
+    [Parameter]
+    public SinglePurposeUserGroupDto Group { get; set; }
+
+    [Parameter]
+    public EventCallback<SinglePaymentDto> OnSubmit { get; set; }
+    
+    [Parameter]
+    public UnidirectionalPaymentGroupDto PaymentGroup { get; set; }
+
+    private IEnumerable<UserDto> GetPossibleUsers()
+    {
+        return Group?.GroupUsers?.Where(user => user.Id != PaymentGroup?.PaymentBy?.Id);
+    }
+
+    private SinglePaymentDto _model = new();
+
+    protected override void OnInitialized()
+    {
+        if (SinglePayment != null)
+            _model = SinglePayment;
+    }
+
+    private void ModelTargetChanged(UserDto user)
+    {
+        _model.Target = user;
+    }
+
+    private async Task HandleSubmit(OpenableDialog dialogContext)
+    {
+        await OnSubmit.InvokeAsync(_model);
+        dialogContext.CloseDialog();
+        _model = new SinglePaymentDto();
+    }
+
+}

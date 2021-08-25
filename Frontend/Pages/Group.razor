@@ -1,0 +1,33 @@
+﻿@page "/Group/{groupId:guid}"
+@using Frontend.Providers
+@using Entities.GroupDto
+@using Frontend.Components.Groups
+@using Frontend.Services
+@inject UserApiService _userApiService
+
+@if (FoundGroup == null)
+{
+    return;
+}
+
+<GroupTitle Group="@FoundGroup"/>
+<GroupUsers Group="@FoundGroup"/>
+<GroupPayments Group="@FoundGroup"/>
+
+@code {
+
+    [Parameter]
+    public Guid GroupId { get; set; }
+
+    [CascadingParameter]
+    public GroupServiceProvider GroupServiceProvider { get; set; }
+
+    private SinglePurposeUserGroupDto FoundGroup =>
+        GroupServiceProvider.UserGroups.FirstOrDefault(group => group.Id == GroupId);
+
+    protected override async Task OnInitializedAsync()
+    {
+        await _userApiService.LoadCurrent();
+    }
+
+}

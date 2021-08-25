@@ -211,7 +211,12 @@ namespace WebApplication.Controllers
                 return BadRequest("payment not found");
 
             foundPayment.Price = paymentDto.Price;
-            foundPayment.Target.Id = paymentDto?.Target?.Id ?? foundPayment.Target.Id;
+            if (paymentDto.Target?.Id != null)
+            {
+                var userReplacement = new ApplicationUser { Id = paymentDto.Target.Id };
+                context.Attach(userReplacement);
+                foundPayment.Target = userReplacement;
+            }
             await context.SaveChangesAsync();
             return paymentDto;
         }
