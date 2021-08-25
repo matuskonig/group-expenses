@@ -1,0 +1,82 @@
+﻿@using Entities.GroupDto
+@using Frontend.Providers
+@using Entities.AuthDto
+
+<OpenableDialog>
+    <Opener>
+        <button @onclick="@context.OpenDialog">Add new payment</button>
+    </Opener>
+    <Title>
+        <h3>Add new payment</h3>
+    </Title>
+    <ChildContent>
+        Payment by: @(PaymentGroup?.PaymentBy?.UserName ?? "-")
+        <UserSelectDialog
+            OpenerTitle="Set payer user"
+            DialogTitle="Set payer user"
+            Users="@Group.GroupUsers"
+            SelectedUserId="@PaymentGroup?.PaymentBy?.Id"
+            OnSubmit="@OnPayerUserSelect"/>
+        <h6>Payment targets</h6>
+        <SinglePaymentDialog
+            DialogTitle="Add new payment"
+            OpenerTitle="Add new payment"
+            Group="@Group"
+            PaymentGroup="@PaymentGroup"
+            OnSubmit="@OnNewSinglePaymentAdded"/>
+        <ul>
+            @if (PaymentGroup?.PaymentTargets != null)
+            {
+                @foreach (var payment in PaymentGroup.PaymentTargets)
+                {
+                    <li>
+                        @payment.Price - @payment.Target.UserName
+                        <SinglePaymentDialog
+                            DialogTitle="Edit payment"
+                            OpenerTitle="Edit"
+                            Group="@Group"
+                            PaymentGroup="@PaymentGroup"
+                            SinglePayment="@payment"
+                            OnSubmit="@OnEditPayment"/>
+                        <button @onclick="() => OnRemoveExistingPayment.InvokeAsync(payment)">Remove</button>
+                    </li>
+                }
+            }
+        </ul>
+        <button @onclick="() => HandleSubmit(context)">Submit</button>
+    </ChildContent>
+</OpenableDialog>
+
+@code {
+
+    [CascadingParameter]
+    public CurrentUserProvider CurrentUserProvider { get; set; }
+
+    [Parameter]
+    public SinglePurposeUserGroupDto Group { get; set; }
+    
+    [Parameter]
+    public EventCallback<SinglePaymentDto> OnRemoveExistingPayment { get; set; }
+
+    [Parameter]
+    public EventCallback<SinglePaymentDto> OnEditPayment { get; set; }
+    
+    [Parameter]
+    public EventCallback<UserDto> OnPayerUserSelect { get; set; }
+    
+    [Parameter]
+    public EventCallback<UnidirectionalPaymentGroupDto> OnSubmit { get; set; }
+
+    [Parameter]
+    public EventCallback<SinglePaymentDto> OnNewSinglePaymentAdded { get; set; }
+    
+    [Parameter]
+    public UnidirectionalPaymentGroupDto PaymentGroup { get; set; }
+
+    private async Task HandleSubmit(OpenableDialog dialogContext)
+    {
+        await OnSubmit.InvokeAsync();
+        dialogContext.CloseDialog();
+    }
+
+}

@@ -1,4 +1,7 @@
 ﻿@using Entities.GroupDto
+<h4>Payments</h4>
+<AddPaymentGroupDialog Group="@Group"/>
+
 @foreach (var paymentGroup in Group.GroupPayments)
 {
     <div>
@@ -12,7 +15,7 @@
         </div>
     </div>
 }
-<h4>Payments</h4>
+
 
 @code {
 
