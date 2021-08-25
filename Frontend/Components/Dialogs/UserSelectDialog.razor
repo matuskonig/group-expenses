@@ -15,11 +15,13 @@
     <ChildContent>
         <UserSelectForm
             OnSubmit="user => HandleSubmit(user, context)"
-            Users="@Users"/>
+            Users="@Users"
+            SelectedUserId="@SelectedUserId"/>
     </ChildContent>
 </OpenableDialog>
 
 @code {
+
     [Parameter]
     public string OpenerTitle { get; set; }
 
@@ -30,6 +32,9 @@
     public IEnumerable<UserDto> Users { get; set; }
 
     [Parameter]
+    public string SelectedUserId { get; set; }
+
+    [Parameter]
     public EventCallback<UserDto> OnSubmit { get; set; }
 
     private async Task HandleSubmit(UserDto user, OpenableDialog context)
@@ -37,4 +42,5 @@
         await OnSubmit.InvokeAsync(user);
         context.CloseDialog();
     }
+
 }
