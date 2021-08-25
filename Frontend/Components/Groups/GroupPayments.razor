@@ -1,25 +1,42 @@
 ﻿@using Entities.GroupDto
+@using Frontend.Services
+@inject GroupService _groupService
+
 <h4>Payments</h4>
+
 <AddPaymentGroupDialog Group="@Group"/>
 
-@foreach (var paymentGroup in Group.GroupPayments)
-{
-    <div>
-        <div>from: @paymentGroup.PaymentBy.UserName</div>
-        <div>
-            to:
-            @foreach (var singlePayment in paymentGroup.PaymentTargets)
-            {
-                <span>@singlePayment.Price @singlePayment.Target.UserName</span>
-            }
-        </div>
-    </div>
-}
-
+<ul>
+    @foreach (var paymentGroup in Group.GroupPayments)
+    {
+        <li>
+            <div>from: @paymentGroup.PaymentBy.UserName</div>
+            <div>
+                to:
+                @foreach (var singlePayment in paymentGroup.PaymentTargets)
+                {
+                    <span>@singlePayment.Price @singlePayment.Target.UserName</span>
+                }
+                <EditPaymentGroupDialog Group="@Group" PaymentGroup="@paymentGroup"/>
+            </div>
+            <button @onclick="() => HandleRemovePayment(paymentGroup)">X</button>
+        </li>
+    }
+</ul>
 
 @code {
 
     [Parameter]
     public SinglePurposeUserGroupDto Group { get; set; }
+
+    private async Task HandleRemovePayment(UnidirectionalPaymentGroupDto paymentGroup)
+    {
+        await _groupService.ModifyUserGroup(new SinglePurposeUserGroupDto
+        {
+            Id = Group.Id,
+            GroupPayments = Group.GroupPayments.Except(new[] { paymentGroup })
+        });
+        await _groupService.LoadAll();
+    }
 
 }

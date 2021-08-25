@@ -4,10 +4,10 @@
 
 <OpenableDialog>
     <Opener>
-        <button @onclick="@context.OpenDialog">Add new payment</button>
+        <button @onclick="@context.OpenDialog">@Title</button>
     </Opener>
     <Title>
-        <h3>Add new payment</h3>
+        <h3>@Title</h3>
     </Title>
     <ChildContent>
         Payment by: @(PaymentGroup?.PaymentBy?.UserName ?? "-")
@@ -43,7 +43,10 @@
                 }
             }
         </ul>
-        <button @onclick="() => HandleSubmit(context)">Submit</button>
+        @if (OnSubmit.HasDelegate)
+        {
+            <button @onclick="() => HandleSubmit(context)">Submit</button>
+        }
     </ChildContent>
 </OpenableDialog>
 
@@ -53,29 +56,35 @@
     public CurrentUserProvider CurrentUserProvider { get; set; }
 
     [Parameter]
+    public string Title { get; set; }
+
+    [Parameter]
     public SinglePurposeUserGroupDto Group { get; set; }
-    
+
     [Parameter]
     public EventCallback<SinglePaymentDto> OnRemoveExistingPayment { get; set; }
 
     [Parameter]
     public EventCallback<SinglePaymentDto> OnEditPayment { get; set; }
-    
+
     [Parameter]
     public EventCallback<UserDto> OnPayerUserSelect { get; set; }
-    
+
     [Parameter]
     public EventCallback<UnidirectionalPaymentGroupDto> OnSubmit { get; set; }
 
     [Parameter]
     public EventCallback<SinglePaymentDto> OnNewSinglePaymentAdded { get; set; }
-    
+
     [Parameter]
     public UnidirectionalPaymentGroupDto PaymentGroup { get; set; }
 
     private async Task HandleSubmit(OpenableDialog dialogContext)
     {
-        await OnSubmit.InvokeAsync();
+        if (OnSubmit.HasDelegate)
+        {
+            await OnSubmit.InvokeAsync();
+        }
         dialogContext.CloseDialog();
     }
 
