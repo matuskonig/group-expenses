@@ -12,21 +12,25 @@
         @DialogTitle
     </Title>
     <ChildContent>
-        <div>
-            <EditForm Model="@_model">
-                <InputNumber @bind-Value="@_model.Price"></InputNumber>
-            </EditForm>
-        </div>
+        <dl class="row">
+            <dt class="col-sm-6">Price</dt>
+            <dd class="col-sm-6">
+                <EditForm Model="@_model">
+                    <InputNumber @bind-Value="@_model.Price"/>
+                </EditForm>
+            </dd>
 
-        <div>
-            Payment to: @(_model?.Target?.UserName ?? "-")
-            <UserSelectDialog
-                SelectedUserId="@_model?.Target?.Id"
-                DialogTitle="Select payment target"
-                Icon="@IconName.Pencil"
-                Users="@GetPossibleUsers()"
-                OnSubmit="@ModelTargetChanged"/>
-        </div>
+            <dt class="col-sm-6">Payment to:</dt>
+            <dd class="col-sm-6">
+                @(_model?.Target?.UserName ?? "-")
+                <UserSelectDialog
+                    SelectedUserId="@_model?.Target?.Id"
+                    DialogTitle="Select payment target"
+                    Icon="@IconName.Pencil"
+                    Users="@GetPossibleUsers()"
+                    OnSubmit="@ModelTargetChanged"/>
+            </dd>
+        </dl>
 
         <PrimaryButton OnClick="() => HandleSubmit(singlePaymentDialogContext)">Submit</PrimaryButton>
     </ChildContent>
@@ -48,7 +52,7 @@
 
     [Parameter]
     public EventCallback<SinglePaymentDto> OnSubmit { get; set; }
-    
+
     [Parameter]
     public UnidirectionalPaymentGroupDto PaymentGroup { get; set; }
 

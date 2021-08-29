@@ -12,41 +12,54 @@
         @Title
     </Title>
     <ChildContent>
-        Payment by: @(PaymentGroup?.PaymentBy?.UserName ?? "-")
-        <UserSelectDialog
-            Icon="@IconName.Pencil"
-            DialogTitle="Set payer user"
-            Users="@Group.GroupUsers"
-            SelectedUserId="@PaymentGroup?.PaymentBy?.Id"
-            OnSubmit="@OnPayerUserSelect"/>
-        <h6>Payment targets</h6>
-        <SinglePaymentDialog
-            DialogTitle="Add new payment"
-            Icon="@IconName.Plus"
-            Group="@Group"
-            PaymentGroup="@PaymentGroup"
-            OnSubmit="@OnNewSinglePaymentAdded"/>
-        <ul>
-            @if (PaymentGroup?.PaymentTargets != null)
-            {
-                @foreach (var payment in PaymentGroup.PaymentTargets)
+        <dl class="row">
+            <dt class="col-sm-6">Group name:</dt>
+            <dd class="col-sm-6">@(PaymentGroup.Name ?? "-")</dd>
+
+            <dt class="col-sm-6">Payment by:</dt>
+            <dd class="col-sm-6">
+                @(PaymentGroup?.PaymentBy?.UserName ?? "-")
+                <UserSelectDialog
+                    Icon="@IconName.Pencil"
+                    DialogTitle="Set payer user"
+                    Users="@Group.GroupUsers"
+                    SelectedUserId="@PaymentGroup?.PaymentBy?.Id"
+                    OnSubmit="@OnPayerUserSelect"/>
+            </dd>
+
+            <dt class="col-sm-6">Payment targets:</dt>
+            <dd class="col-sm-6">
+                <SinglePaymentDialog
+                    DialogTitle="Add new payment"
+                    Icon="@IconName.Plus"
+                    Group="@Group"
+                    PaymentGroup="@PaymentGroup"
+                    OnSubmit="@OnNewSinglePaymentAdded"/>
+                @if (PaymentGroup?.PaymentTargets != null)
                 {
-                    <li>
-                        @payment.Price - @payment.Target.UserName
-                        <SinglePaymentDialog
-                            DialogTitle="Edit payment"
-                            Icon="@IconName.Pencil"
-                            Group="@Group"
-                            PaymentGroup="@PaymentGroup"
-                            SinglePayment="@payment"
-                            OnSubmit="@OnEditPayment"/>
-                        <DangerIconButton
-                            OnClick="() => OnRemoveExistingPayment.InvokeAsync(payment)"
-                            Icon="@IconName.Trash"/>
-                    </li>
+                    <ul class="list-group">
+                        @foreach (var payment in PaymentGroup.PaymentTargets)
+                        {
+                            <li class="list-group-item">
+                                @payment.Price - @payment.Target.UserName
+                                <SinglePaymentDialog
+                                    DialogTitle="Edit payment"
+                                    Icon="@IconName.Pencil"
+                                    Group="@Group"
+                                    PaymentGroup="@PaymentGroup"
+                                    SinglePayment="@payment"
+                                    OnSubmit="@OnEditPayment"/>
+                                <DangerIconButton
+                                    OnClick="() => OnRemoveExistingPayment.InvokeAsync(payment)"
+                                    Icon="@IconName.Trash"/>
+                            </li>
+                        }
+                    </ul>
                 }
-            }
-        </ul>
+            </dd>
+        </dl>
+
+
         @if (OnSubmit.HasDelegate)
         {
             <PrimaryButton OnClick="() => HandleSubmit(context)">Submit</PrimaryButton>
