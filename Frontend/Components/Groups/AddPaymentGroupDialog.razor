@@ -2,10 +2,12 @@
 @using Entities.GroupDto
 @using Frontend.Providers
 @using Entities.AuthDto
+@using Frontend.Constants
 @using Frontend.Services
 @inject GroupService _groupService
 
 <PaymentGroupDialog
+    Icon="@IconName.Plus"
     Group="@Group"
     PaymentGroup="@_paymentGroup"
     Title="Add new payment"

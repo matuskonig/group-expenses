@@ -9,17 +9,27 @@
 
 <h4>Users</h4>
 
-@foreach (var user in Group.GroupUsers)
-{
-    <div>
-        @user.UserName <button @onclick="RemoveUserFromGroup(user)">&times;</button>
-    </div>
-}
-<UserSelectDialog
-    OpenerTitle="Add users to group"
-    DialogTitle="Add user"
-    Users="@GetPossibleNewUsers()"
-    OnSubmit="@HandleAddNewFriend"/>
+<div class="mb-1">
+    <UserSelectDialog
+        Icon="oi-plus"
+        DialogTitle="Add user"
+        Users="@GetPossibleNewUsers()"
+        OnSubmit="@HandleAddNewFriend"/>
+</div>
+
+<ul class="list-group w-50">
+    @foreach (var user in Group.GroupUsers)
+    {
+        <li class="list-group-item">
+            @user.UserName &nbsp;
+            <button class="btn btn-danger" @onclick="() => RemoveUserFromGroup(user)">
+                <i class="oi oi-trash"></i>
+            </button>
+        </li>
+    }
+</ul>
+
+
 
 
 @code {
@@ -31,18 +41,18 @@
     [CascadingParameter]
     public CurrentUserProvider CurrentUserProvider { get; set; }
 
-    private Func<Task> RemoveUserFromGroup(UserDto userDto) => async () =>
-    {
-        var userComparer = new PropertyEqualityComparer<UserDto, string>(user => user.Id);
+    private PropertyEqualityComparer<UserDto, string> _userComparer = new(user => user.Id);
+
+    private async Task RemoveUserFromGroup(UserDto userDto) {
         await _groupService.ModifyUserGroup(new SinglePurposeUserGroupDto
         {
             Id = Group.Id,
             GroupUsers = Group.GroupUsers
-                .Except(new[] { userDto }, userComparer)
+                .Except(new[] { userDto }, _userComparer)
         });
         await _groupService.LoadAll();
-    };
-
+    }
+    
     private IEnumerable<UserDto> GetPossibleNewUsers()
     {
         return CurrentUserProvider

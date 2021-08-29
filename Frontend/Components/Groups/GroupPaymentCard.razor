@@ -1,0 +1,41 @@
+﻿@using Entities.GroupDto
+@using Frontend.Services
+@inject GroupService _groupService
+
+<div class="card m-2">
+    <div class="card-body">
+        <h5 class="card-title">Payment title goes here</h5>
+        <p class="card-text">Payment by: @PaymentGroup.PaymentBy.UserName</p>
+        <p class="card-text">Payment targets:</p>
+        <ul class="list-group mb-5">
+            @foreach (var singlePayment in PaymentGroup.PaymentTargets)
+            {
+                <li class="list-group-item">@singlePayment.Price - @singlePayment.Target.UserName</li>
+            }
+        </ul>
+        <div class="flex-row">
+            <EditPaymentGroupDialog Group="@Group" PaymentGroup="@PaymentGroup"/>
+            <button class="btn btn-danger" @onclick="@HandleRemovePayment"><i class="oi oi-trash"></i></button>
+        </div>
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public SinglePurposeUserGroupDto Group { get; set; }
+
+    [Parameter]
+    public UnidirectionalPaymentGroupDto PaymentGroup { get; set; }
+
+    private async Task HandleRemovePayment()
+    {
+        await _groupService.ModifyUserGroup(new SinglePurposeUserGroupDto
+        {
+            Id = Group.Id,
+            GroupPayments = Group.GroupPayments.Except(new[] { PaymentGroup })
+        });
+        await _groupService.LoadAll();
+    }
+
+}

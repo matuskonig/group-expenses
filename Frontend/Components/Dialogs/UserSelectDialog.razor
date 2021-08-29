@@ -3,14 +3,15 @@
 @using Entities.GroupDto
 @using Frontend.Components.Forms
 @using Frontend.Services
+@using Frontend.Components.UI
 @inject GroupService _groupService
 
 <OpenableDialog>
     <Opener>
-        <button @onclick="@context.OpenDialog">@OpenerTitle</button>
+        <PrimaryIconButton OnClick="@context.OpenDialog" Icon="@Icon"></PrimaryIconButton>
     </Opener>
     <Title>
-        <h3>@DialogTitle</h3>
+        @DialogTitle
     </Title>
     <ChildContent>
         <UserSelectForm
@@ -23,7 +24,7 @@
 @code {
 
     [Parameter]
-    public string OpenerTitle { get; set; }
+    public string Icon { get; set; }
 
     [Parameter]
     public string DialogTitle { get; set; }

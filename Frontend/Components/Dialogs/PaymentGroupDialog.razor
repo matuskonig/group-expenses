@@ -1,18 +1,20 @@
 ﻿@using Entities.GroupDto
 @using Frontend.Providers
 @using Entities.AuthDto
+@using Frontend.Constants
+@using Frontend.Components.UI
 
-<OpenableDialog>
+<OpenableDialog >
     <Opener>
-        <button @onclick="@context.OpenDialog">@Title</button>
+        <PrimaryIconButton OnClick="@context.OpenDialog" Icon="@Icon"/>
     </Opener>
     <Title>
-        <h3>@Title</h3>
+        @Title
     </Title>
     <ChildContent>
         Payment by: @(PaymentGroup?.PaymentBy?.UserName ?? "-")
         <UserSelectDialog
-            OpenerTitle="Set payer user"
+            Icon="@IconName.Pencil"
             DialogTitle="Set payer user"
             Users="@Group.GroupUsers"
             SelectedUserId="@PaymentGroup?.PaymentBy?.Id"
@@ -20,7 +22,7 @@
         <h6>Payment targets</h6>
         <SinglePaymentDialog
             DialogTitle="Add new payment"
-            OpenerTitle="Add new payment"
+            Icon="@IconName.Plus"
             Group="@Group"
             PaymentGroup="@PaymentGroup"
             OnSubmit="@OnNewSinglePaymentAdded"/>
@@ -33,19 +35,21 @@
                         @payment.Price - @payment.Target.UserName
                         <SinglePaymentDialog
                             DialogTitle="Edit payment"
-                            OpenerTitle="Edit"
+                            Icon="@IconName.Pencil"
                             Group="@Group"
                             PaymentGroup="@PaymentGroup"
                             SinglePayment="@payment"
                             OnSubmit="@OnEditPayment"/>
-                        <button @onclick="() => OnRemoveExistingPayment.InvokeAsync(payment)">Remove</button>
+                        <DangerIconButton
+                            OnClick="() => OnRemoveExistingPayment.InvokeAsync(payment)"
+                            Icon="@IconName.Trash"/>
                     </li>
                 }
             }
         </ul>
         @if (OnSubmit.HasDelegate)
         {
-            <button @onclick="() => HandleSubmit(context)">Submit</button>
+            <PrimaryButton OnClick="() => HandleSubmit(context)">Submit</PrimaryButton>
         }
     </ChildContent>
 </OpenableDialog>
@@ -54,6 +58,9 @@
 
     [CascadingParameter]
     public CurrentUserProvider CurrentUserProvider { get; set; }
+
+    [Parameter]
+    public string Icon { get; set; }
 
     [Parameter]
     public string Title { get; set; }

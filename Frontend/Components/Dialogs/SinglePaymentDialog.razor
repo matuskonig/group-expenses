@@ -1,13 +1,15 @@
 ﻿@using Entities.GroupDto
 @using Entities.AuthDto
+@using Frontend.Constants
 @using Frontend.Providers
+@using Frontend.Components.UI
 
 <OpenableDialog Context="singlePaymentDialogContext">
     <Opener>
-        <button @onclick="@singlePaymentDialogContext.OpenDialog">@OpenerTitle</button>
+        <PrimaryIconButton OnClick="@singlePaymentDialogContext.OpenDialog" Icon="@Icon"/>
     </Opener>
     <Title>
-        <h3>@DialogTitle</h3>
+        @DialogTitle
     </Title>
     <ChildContent>
         <div>
@@ -21,19 +23,19 @@
             <UserSelectDialog
                 SelectedUserId="@_model?.Target?.Id"
                 DialogTitle="Select payment target"
-                OpenerTitle="Select target"
+                Icon="@IconName.Pencil"
                 Users="@GetPossibleUsers()"
                 OnSubmit="@ModelTargetChanged"/>
         </div>
 
-        <button @onclick="() => HandleSubmit(singlePaymentDialogContext)">Submit</button>
+        <PrimaryButton OnClick="() => HandleSubmit(singlePaymentDialogContext)">Submit</PrimaryButton>
     </ChildContent>
 </OpenableDialog>
 
 @code {
 
     [Parameter]
-    public string OpenerTitle { get; set; }
+    public string Icon { get; set; }
 
     [Parameter]
     public string DialogTitle { get; set; }

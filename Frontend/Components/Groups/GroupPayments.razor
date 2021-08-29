@@ -4,25 +4,20 @@
 
 <h4>Payments</h4>
 
-<AddPaymentGroupDialog Group="@Group"/>
+<div class="mb-1">
+    <AddPaymentGroupDialog Group="@Group"/>
+</div>
 
-<ul>
+
+<div class="row">
     @foreach (var paymentGroup in Group.GroupPayments)
     {
-        <li>
-            <div>from: @paymentGroup.PaymentBy.UserName</div>
-            <div>
-                to:
-                @foreach (var singlePayment in paymentGroup.PaymentTargets)
-                {
-                    <span>@singlePayment.Price @singlePayment.Target.UserName</span>
-                }
-                <EditPaymentGroupDialog Group="@Group" PaymentGroup="@paymentGroup"/>
-            </div>
-            <button @onclick="() => HandleRemovePayment(paymentGroup)">X</button>
-        </li>
+        <div class="col-4">
+            <GroupPaymentCard Group="@Group" PaymentGroup="@paymentGroup"/>
+        </div>
     }
-</ul>
+</div>
+
 
 @code {
 

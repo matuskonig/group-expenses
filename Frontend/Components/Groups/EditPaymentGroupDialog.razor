@@ -1,13 +1,15 @@
 ﻿@using Frontend.Components.Dialogs
 @using Entities.GroupDto
 @using Entities.AuthDto
+@using Frontend.Constants
 @using Frontend.Services
 @inject GroupService _groupService
 
 <PaymentGroupDialog
+    Icon="@IconName.Pencil"
     Group="@Group"
     PaymentGroup="@PaymentGroup"
-    Title="Edit"
+    Title="Edit payment group"
     OnEditPayment="@HandleEditPayment"
     OnPayerUserSelect="@HandlePayerUserSelect"
     OnRemoveExistingPayment="@HandleRemoveExistingPayment"
