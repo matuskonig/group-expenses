@@ -1,5 +1,7 @@
 ﻿@using Entities.GroupDto
 @using Frontend.Services
+@using Frontend.Components.UI
+@using Frontend.Constants
 @inject GroupService _groupService
 
 <div class="card m-2">
@@ -15,7 +17,7 @@
         </ul>
         <div class="flex-row">
             <EditPaymentGroupDialog Group="@Group" PaymentGroup="@PaymentGroup"/>
-            <button class="btn btn-danger" @onclick="@HandleRemovePayment"><i class="oi oi-trash"></i></button>
+            <DangerIconButton OnClick="@RemovePaymentGroup" Icon="@IconName.Trash"></DangerIconButton>
         </div>
     </div>
 </div>
@@ -28,7 +30,7 @@
     [Parameter]
     public UnidirectionalPaymentGroupDto PaymentGroup { get; set; }
 
-    private async Task HandleRemovePayment()
+    private async Task RemovePaymentGroup()
     {
         await _groupService.ModifyUserGroup(new SinglePurposeUserGroupDto
         {

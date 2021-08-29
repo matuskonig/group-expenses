@@ -5,6 +5,8 @@
 @using Frontend.Components.Dialogs
 @using Frontend.Extensions
 @using Frontend.Providers
+@using Frontend.Components.UI
+@using Frontend.Constants
 @inject GroupService _groupService
 
 <h4>Users</h4>
@@ -22,9 +24,7 @@
     {
         <li class="list-group-item">
             @user.UserName &nbsp;
-            <button class="btn btn-danger" @onclick="() => RemoveUserFromGroup(user)">
-                <i class="oi oi-trash"></i>
-            </button>
+            <DangerIconButton OnClick="() => RemoveUserFromGroup(user)" Icon="@IconName.Trash"/>
         </li>
     }
 </ul>
