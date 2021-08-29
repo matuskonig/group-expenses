@@ -83,6 +83,7 @@ namespace WebApplication.Helpers
             return new UnidirectionalPaymentGroupDto
             {
                 Id = paymentGroup.Id,
+                Name = paymentGroup.Name,
                 PaymentBy = paymentGroup.PaymentBy.Serialize(),
                 PaymentTargets = paymentGroup.PaymentTargets?.Select(Serialize)
             };
@@ -93,6 +94,7 @@ namespace WebApplication.Helpers
             return new UnidirectionalPaymentGroup
             {
                 Id = paymentGroup.Id,
+                Name = paymentGroup.Name,
                 PaymentBy = paymentGroup.PaymentBy.Deserialize(),
                 PaymentTargets = paymentGroup.PaymentTargets?.Select(Deserialize).ToList()
             };

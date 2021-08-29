@@ -9,6 +9,7 @@ namespace WebApplication.Models
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid Id { get; set; }
+        public string Name { get; set; }
         public ApplicationUser PaymentBy { get; set; }
         public virtual ICollection<SinglePayment> PaymentTargets { get; set; }
     }

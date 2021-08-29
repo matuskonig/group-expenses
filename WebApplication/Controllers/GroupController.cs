@@ -173,6 +173,10 @@ namespace WebApplication.Controllers
             var loadedUsers = await context.Users
                 .Where(user => addedUserIds.Contains(user.Id))
                 .ToDictionaryAsync(user => user.Id);
+            if (modifiedPaymentGroup.Name != null)
+            {
+                foundPaymentGroup.Name = modifiedPaymentGroup.Name;
+            }
             if (modifiedPaymentGroup.PaymentBy != null)
             {
                 foundPaymentGroup.PaymentBy = loadedUsers[modifiedPaymentGroup.PaymentBy.Id];
