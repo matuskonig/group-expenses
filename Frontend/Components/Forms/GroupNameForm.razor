@@ -1,0 +1,36 @@
+﻿@using Frontend.Components.UI
+@using Entities.GroupDto
+
+<EditForm Model="@_model" OnValidSubmit="@HandleSubmit">
+    <dl class="row">
+        <dt class="col-sm-6">Group name:</dt>
+        <dd class="col-sm-6">
+            <InputText @bind-Value="@_model.Name"/>
+        </dd>
+    </dl>
+    <PrimaryButton Type="submit">Submit</PrimaryButton>
+</EditForm>
+
+@code {
+
+    [Parameter]
+    public UnidirectionalPaymentGroupDto PaymentGroup { get; set; }
+
+    [Parameter]
+    public EventCallback<UnidirectionalPaymentGroupDto> OnSubmit { get; set; }
+
+    private UnidirectionalPaymentGroupDto _model;
+
+    protected override void OnInitialized()
+    {
+        _model = new UnidirectionalPaymentGroupDto { Name = PaymentGroup?.Name };
+    }
+
+    private async Task HandleSubmit()
+    {
+        await OnSubmit.InvokeAsync(_model);
+        _model = new UnidirectionalPaymentGroupDto();
+    }
+
+
+}

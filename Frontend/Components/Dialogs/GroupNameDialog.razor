@@ -1,0 +1,34 @@
+﻿@using Frontend.Components.Forms
+@using Entities.GroupDto
+@using Frontend.Components.UI
+@using Frontend.Constants
+
+<OpenableDialog>
+    <Opener>
+        <PrimaryIconButton Icon="@IconName.Pencil" OnClick="@context.OpenDialog"/>
+    </Opener>
+    <Title>
+        <h3>Edit group name</h3>
+    </Title>
+    <ChildContent>
+        <GroupNameForm
+            PaymentGroup="@PaymentGroup"
+            OnSubmit="paymentGroup => HandleSubmit(context, paymentGroup)"/>
+    </ChildContent>
+</OpenableDialog>
+
+@code {
+
+    [Parameter]
+    public UnidirectionalPaymentGroupDto PaymentGroup { get; set; }
+
+    [Parameter]
+    public EventCallback<UnidirectionalPaymentGroupDto> OnSubmit { get; set; }
+
+    private async Task HandleSubmit(OpenableDialog dialog, UnidirectionalPaymentGroupDto model)
+    {
+        await OnSubmit.InvokeAsync(model);
+        dialog.CloseDialog();
+    }
+
+}

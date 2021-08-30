@@ -13,7 +13,8 @@
     OnEditPayment="@HandleEditPayment"
     OnPayerUserSelect="@HandlePayerUserSelect"
     OnRemoveExistingPayment="@HandleRemoveExistingPayment"
-    OnNewSinglePaymentAdded="@HandleNewSinglePaymentAdded"/>
+    OnNewSinglePaymentAdded="@HandleNewSinglePaymentAdded"
+    OnGroupNameChange="@HandleGroupNameChange"/>
 
 @code {
 
@@ -55,6 +56,16 @@
         {
             Id = PaymentGroup.Id,
             PaymentTargets = PaymentGroup.PaymentTargets.Append(payment)
+        });
+        await _groupService.LoadAll();
+    }
+
+    private async Task HandleGroupNameChange(UnidirectionalPaymentGroupDto paymentGroup)
+    {
+        await _groupService.ModifyPaymentGroup(new UnidirectionalPaymentGroupDto
+        {
+            Id = PaymentGroup.Id,
+            Name = paymentGroup.Name
         });
         await _groupService.LoadAll();
     }

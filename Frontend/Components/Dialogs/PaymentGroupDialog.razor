@@ -14,7 +14,12 @@
     <ChildContent>
         <dl class="row">
             <dt class="col-sm-6">Group name:</dt>
-            <dd class="col-sm-6">@(PaymentGroup.Name ?? "-")</dd>
+            <dd class="col-sm-6">
+                @(PaymentGroup.Name ?? "-")
+                <GroupNameDialog
+                    PaymentGroup="@PaymentGroup"
+                    OnSubmit="@OnGroupNameChange"/>
+            </dd>
 
             <dt class="col-sm-6">Payment by:</dt>
             <dd class="col-sm-6">
@@ -97,7 +102,11 @@
     public EventCallback<SinglePaymentDto> OnNewSinglePaymentAdded { get; set; }
 
     [Parameter]
+    public EventCallback<UnidirectionalPaymentGroupDto> OnGroupNameChange { get; set; }
+
+    [Parameter]
     public UnidirectionalPaymentGroupDto PaymentGroup { get; set; }
+
 
     private async Task HandleSubmit(OpenableDialog dialogContext)
     {

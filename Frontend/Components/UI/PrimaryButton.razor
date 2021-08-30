@@ -1,9 +1,11 @@
-﻿<button class="btn btn-primary btn-sm" @onclick="@OnClick">
+﻿<button class="btn btn-primary btn-sm" @onclick="@OnClick" type="@Type">
     @ChildContent
 </button>
 
 @code {
-
+    [Parameter]
+    public string Type { get; set; }
+    
     [Parameter]
     public EventCallback OnClick { get; set; }
 

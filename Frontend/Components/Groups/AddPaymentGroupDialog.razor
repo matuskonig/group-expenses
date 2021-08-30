@@ -15,7 +15,8 @@
     OnEditPayment="@HandleEditPayment"
     OnPayerUserSelect="@HandlePayerUserSelect"
     OnRemoveExistingPayment="@HandleRemoveExistingPayment"
-    OnNewSinglePaymentAdded="@HandleNewSinglePaymentAdded"/>
+    OnNewSinglePaymentAdded="@HandleNewSinglePaymentAdded"
+    OnGroupNameChange="@HandleGroupNameChange"/>
 
 @code {
 
@@ -60,4 +61,8 @@
         _paymentGroup.PaymentTargets = _paymentGroup.PaymentTargets.Append(payment);
     }
 
+    private void HandleGroupNameChange(UnidirectionalPaymentGroupDto paymentGroup)
+    {
+        _paymentGroup.Name = paymentGroup.Name;
+    }
 }
