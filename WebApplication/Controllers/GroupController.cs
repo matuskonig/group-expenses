@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using WebApplication.Algorithms;
 using WebApplication.Authentication;
 using WebApplication.Helpers;
 using WebApplication.Models;
@@ -17,28 +18,28 @@ namespace WebApplication.Controllers
     [ApiController]
     public class GroupController : Controller
     {
-        private readonly UserManager<ApplicationUser> userManager;
-        private readonly ApplicationContext context;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ApplicationContext _context;
 
         public GroupController(UserManager<ApplicationUser> userManager, ApplicationContext context)
         {
-            this.userManager = userManager;
-            this.context = context;
+            _userManager = userManager;
+            _context = context;
         }
 
         [Authorize]
         [HttpGet("currentUserGroup")]
         public async Task<ActionResult<IEnumerable<SinglePurposeUserGroupDto>>> GetCurrentUserGroups()
         {
-            var currentUserId = userManager.GetUserId(User);
-            var user = await context.Users
+            var currentUserId = _userManager.GetUserId(User);
+            var user = await _context.Users
                 .AsSplitQuery()
                 .Where(user => user.Id == currentUserId)
                 .Include(user => user.PaymentGroups)
-                    .ThenInclude(paymentGroup => paymentGroup.GroupUsers)
+                .ThenInclude(paymentGroup => paymentGroup.GroupUsers)
                 .Include(user => user.PaymentGroups)
-                    .ThenInclude(paymentGroup => paymentGroup.GroupPayments)
-                        .ThenInclude(unidirectionalPaymentGroup => unidirectionalPaymentGroup.PaymentTargets)
+                .ThenInclude(paymentGroup => paymentGroup.GroupPayments)
+                .ThenInclude(unidirectionalPaymentGroup => unidirectionalPaymentGroup.PaymentTargets)
                 .FirstOrDefaultAsync();
 
             var serializedData = user?.PaymentGroups
@@ -52,16 +53,16 @@ namespace WebApplication.Controllers
         public async Task<ActionResult<SinglePurposeUserGroupDto>> AddNewDefaultGroup(
             [FromBody] SinglePurposeUserGroupDto groupDto)
         {
-            var currentUser = await userManager.GetUserAsync(User);
+            var currentUser = await _userManager.GetUserAsync(User);
             var group = new SinglePurposeUserGroup
             {
                 Name = groupDto.Name,
                 GroupUsers = new List<ApplicationUser> { currentUser }
             };
 
-            await context.UserGroups.AddAsync(group);
+            await _context.UserGroups.AddAsync(group);
 
-            await context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
             return group.Serialize();
         }
 
@@ -73,12 +74,12 @@ namespace WebApplication.Controllers
         {
             if (modifiedGroup.Id == Guid.Empty)
                 return BadRequest("no id specified");
-            var foundGroup = await context.UserGroups
+            var foundGroup = await _context.UserGroups
                 .Where(group => group.Id == modifiedGroup.Id)
                 .Include(group => group.GroupUsers)
                 .Include(group => group.GroupPayments)
                 .FirstOrDefaultAsync();
-            var currentUserId = userManager.GetUserId(User);
+            var currentUserId = _userManager.GetUserId(User);
 
             if (foundGroup == null)
                 return BadRequest("group not found");
@@ -105,7 +106,7 @@ namespace WebApplication.Controllers
             var addedGroupUsers = addedGroups
                 .SelectMany(group => group.PaymentTargets.Select(target => target.Target).Append(group.PaymentBy));
             var fak = addedUsers.Concat(addedGroupUsers).Select(user => user.Id).ToHashSet();
-            var loadedUsers = await context.Users
+            var loadedUsers = await _context.Users
                 .Where(user => fak.Contains(user.Id))
                 .ToDictionaryAsync(user => user.Id);
             foreach (var toRemove in deletedUsers)
@@ -136,7 +137,7 @@ namespace WebApplication.Controllers
             }
 
 
-            await context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
             return foundGroup.Serialize();
         }
 
@@ -147,16 +148,16 @@ namespace WebApplication.Controllers
         {
             if (modifiedPaymentGroup.Id == Guid.Empty)
                 return BadRequest("no Id provided");
-            var foundPaymentGroup = await context.PaymentGroups
+            var foundPaymentGroup = await _context.PaymentGroups
                 .Where(paymentGroup => paymentGroup.Id == modifiedPaymentGroup.Id)
                 .Include(paymentGroup => paymentGroup.PaymentBy)
                 .Include(paymentGroup => paymentGroup.PaymentTargets)
-                    .ThenInclude(singlePayment => singlePayment.Target)
+                .ThenInclude(singlePayment => singlePayment.Target)
                 .FirstOrDefaultAsync();
             if (foundPaymentGroup == null)
                 return BadRequest("missing payment group");
             //TODO: check, whether it is part of some group with user
-            context.Entry(foundPaymentGroup).OriginalValues.SetValues(modifiedPaymentGroup);
+            _context.Entry(foundPaymentGroup).OriginalValues.SetValues(modifiedPaymentGroup);
             var (addedPayments, removedPayments) =
                 modifiedPaymentGroup.PaymentTargets == null
                     ? (Enumerable.Empty<SinglePayment>(), Enumerable.Empty<SinglePayment>())
@@ -170,24 +171,26 @@ namespace WebApplication.Controllers
                 .Append(modifiedPaymentGroup.PaymentBy?.Id)
                 .Where(value => value != null)
                 .ToHashSet();
-            var loadedUsers = await context.Users
+            var loadedUsers = await _context.Users
                 .Where(user => addedUserIds.Contains(user.Id))
                 .ToDictionaryAsync(user => user.Id);
             if (modifiedPaymentGroup.Name != null)
             {
                 foundPaymentGroup.Name = modifiedPaymentGroup.Name;
             }
+
             if (modifiedPaymentGroup.PaymentBy != null)
             {
                 foundPaymentGroup.PaymentBy = loadedUsers[modifiedPaymentGroup.PaymentBy.Id];
             }
+
             if (modifiedPaymentGroup.PaymentTargets != null)
             {
                 foreach (var deletedPayment in removedPayments)
                 {
                     foundPaymentGroup.PaymentTargets.Remove(deletedPayment);
                 }
-                
+
                 foreach (var addedPayment in addedPayments)
                 {
                     addedPayment.Target = loadedUsers[addedPayment.Target.Id];
@@ -195,7 +198,7 @@ namespace WebApplication.Controllers
                 }
             }
 
-            await context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
             return foundPaymentGroup.Serialize();
         }
 
@@ -207,7 +210,7 @@ namespace WebApplication.Controllers
             if (paymentDto.Id == Guid.Empty)
                 return BadRequest("missing id");
 
-            var foundPayment = await context.SinglePayments
+            var foundPayment = await _context.SinglePayments
                 .Where(payment => payment.Id == paymentDto.Id)
                 .Include(payment => payment.Target)
                 .FirstOrDefaultAsync();
@@ -217,12 +220,38 @@ namespace WebApplication.Controllers
             foundPayment.Price = paymentDto.Price;
             if (paymentDto.Target?.Id != null)
             {
-                var userReplacement = new ApplicationUser { Id = paymentDto.Target.Id };
-                context.Attach(userReplacement);
+                var userReplacement = await _context.Users.FindAsync(paymentDto.Target.Id);
                 foundPayment.Target = userReplacement;
             }
-            await context.SaveChangesAsync();
+
+            await _context.SaveChangesAsync();
             return paymentDto;
+        }
+
+        [Authorize]
+        [HttpGet("getGroupSettlement/{groupId:guid}")]
+        public async Task<ActionResult<IEnumerable<PaymentRecordDto>>> GetGroupBalance(Guid groupId)
+        {
+            var currentUser = await _context.Users.FirstOrDefaultAsync(user => user.Id == _userManager.GetUserId(User));
+            var group = await _context.UserGroups
+                .Where(group => group.Id == groupId)
+                .AsSplitQuery()
+                .Include(group => group.GroupUsers)
+                .Include(group => group.GroupPayments)
+                .ThenInclude(groupPayment => groupPayment.PaymentBy)
+                .Include(group => group.GroupPayments)
+                .ThenInclude(group => group.PaymentTargets)
+                .ThenInclude(target => target.Target)
+                .FirstOrDefaultAsync();
+            var groupSettlement = GroupSolver.FindGroupSettlement(group);
+            return groupSettlement
+                .Select(record => new PaymentRecordDto
+                {
+                    PaymentBy = record.PaymentBy.Serialize(serializeRequests: false),
+                    PaymentFor = record.PaymentFor.Serialize(serializeRequests: false),
+                    Price = record.Price
+                })
+                .ToArray();
         }
     }
 }
