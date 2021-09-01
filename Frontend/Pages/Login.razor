@@ -1,13 +1,14 @@
 ﻿@page "/Login"
 @using Entities.AuthDto
 @using Frontend.Providers
+@using Frontend.Components.UI
 
 <h3>Login</h3>
 <EditForm Model="@request" OnValidSubmit="OnSubmit">
     Email: <InputText id="email" @bind-Value="@request.Email"/>
     Password: <InputText id="password" @bind-Value="@request.Password"/>
 
-    <button type="submit">Submit</button>
+    <PrimaryButton Type="submit">Submit</PrimaryButton>
 </EditForm>
 
 @code {
