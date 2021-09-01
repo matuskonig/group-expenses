@@ -1,9 +1,10 @@
-﻿@page "/Groups"
+﻿@page "/"
 @inject NavigationManager _navigationManager
 @inject GroupService _groupService;
 @using Frontend.Providers
 @using Frontend.Services
 @using Frontend.Components.Groups
+@attribute
 
 <Authorized>
     <h3>Groups</h3>
@@ -23,6 +24,9 @@
 @code {
 
     [CascadingParameter]
+    public CurrentUserProvider CurrentUserProvider { get; set; }
+
+    [CascadingParameter]
     public GroupServiceProvider GroupServiceProvider { get; set; }
 
     private Action HandleGroupNavigation(Guid groupId)
@@ -32,7 +36,8 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await _groupService.LoadAll();
+        if (CurrentUserProvider.CurrentUser != null)
+            await _groupService.LoadAll();
     }
 
 }

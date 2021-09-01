@@ -1,8 +1,8 @@
 ﻿@using Frontend.Services
 @using Entities.AuthDto
 @implements IDisposable
-@inject AuthApiService authApiService
-@inject NavigationManager navigationManager
+@inject AuthApiService _authApiService
+@inject NavigationManager _navigationManager
 
 <CascadingValue Value="@this">
     @ChildContent
@@ -15,36 +15,29 @@
 
     [Parameter]
     public RenderFragment NotLoggedInDefault { get; set; }
-    
-    public bool IsLoggedIn => authApiService.JwtSecurityToken?.ValidTo > DateTime.Now;
+
+    public bool IsLoggedIn => _authApiService.JwtSecurityToken?.ValidTo > DateTime.Now;
 
     public async Task Login(LoginRequest request)
     {
-        try
-        {
-            await authApiService.Login(request);
-            navigationManager.NavigateTo("Dashboard");
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine("something is wrong");
-            Console.WriteLine(e.Message);
-        }
+        await _authApiService.Login(request);
+        _navigationManager.NavigateTo("/");
     }
 
-    
+
     public void Logout()
     {
-        authApiService.Logout();
+        _authApiService.Logout();
     }
+
     protected override void OnInitialized()
     {
-        authApiService.OnChange += StateHasChanged;
+        _authApiService.OnChange += StateHasChanged;
     }
 
     public void Dispose()
     {
-        authApiService.OnChange -= StateHasChanged;
+        _authApiService.OnChange -= StateHasChanged;
     }
 
 }

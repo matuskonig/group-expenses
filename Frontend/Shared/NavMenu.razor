@@ -1,6 +1,6 @@
 ﻿@using Frontend.Providers
 <div class="top-row pl-4 navbar navbar-dark">
-    <a class="navbar-brand" href="">Frontend</a>
+    <a class="navbar-brand" href="">Group expenses</a>
     <button class="navbar-toggler" @onclick="ToggleNavMenu">
         <span class="navbar-toggler-icon"></span>
     </button>
@@ -11,43 +11,13 @@
         <Authorized>
             <button type="button" @onclick="AuthStateProvider.Logout">Logout</button>
             <li class="nav-item px-3">
-                <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                    <span class="oi oi-home" aria-hidden="true"></span> Home
-                </NavLink>
-            </li>
-            <li class="nav-item px-3">
-                <NavLink class="nav-link" href="Dashboard">
-                    <span class="oi oi-home" aria-hidden="true"></span> Dashboard
-                </NavLink>
-            </li>
-            <li class="nav-item px-3">
-                <NavLink class="nav-link" href="Groups">
+                <NavLink class="nav-link" href="/" m Match="@NavLinkMatch.All">
                     <span class="oi oi-home" aria-hidden="true"></span> Groups
                 </NavLink>
             </li>
             <li class="nav-item px-3">
                 <NavLink class="nav-link" href="Friends">
                     <span class="oi oi-home" aria-hidden="true"></span> Friends
-                </NavLink>
-            </li>
-            <li class="nav-item px-3">
-                <NavLink class="nav-link" href="counter">
-                    <span class="oi oi-plus" aria-hidden="true"></span> Counter
-                </NavLink>
-            </li>
-            <li class="nav-item px-3">
-                <NavLink class="nav-link" href="routedata/Somtasdaf">
-                    <span class="oi oi-list-rich" aria-hidden="true"></span> Route data
-                </NavLink>
-            </li>
-            <li class="nav-item px-3">
-                <NavLink class="nav-link" href="FormSth">
-                    <span class="oi oi-list-rich" aria-hidden="true"></span> SimpleForm
-                </NavLink>
-            </li>
-            <li class="nav-item px-3">
-                <NavLink class="nav-link" href="TodoServiceForm">
-                    <span class="oi oi-list-rich" aria-hidden="true"></span> TodoForm
                 </NavLink>
             </li>
         </Authorized>
