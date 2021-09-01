@@ -76,5 +76,14 @@ namespace Frontend.Services
             var data = await response.Content.ReadFromJsonAsync<SinglePaymentDto>();
             return data;
         }
+
+        public async Task<IEnumerable<PaymentRecordDto>> GetGroupSettlement(SinglePurposeUserGroupDto group)
+        {
+            var response = await _httpClient.GetAsync($"group/getGroupSettlement/{group.Id}");
+            if (!response.IsSuccessStatusCode)
+                throw new Exception("sth went wrong");
+            var data = await response.Content.ReadFromJsonAsync<IEnumerable<PaymentRecordDto>>();
+            return data;
+        }
     }
 }

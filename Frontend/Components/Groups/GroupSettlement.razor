@@ -1,0 +1,47 @@
+﻿@using Frontend.Services
+@using Entities.GroupDto
+@using Frontend.Components.UI
+@using Frontend.Providers
+@inject GroupService _groupService
+
+<h3>Settlement</h3>
+<div class="mb-2">
+    <PrimaryButton OnClick="@LoadGroupSettlement">Load group settlement</PrimaryButton>
+</div>
+
+
+@if (_currentUserGroupSettlement != null)
+{
+    if (_currentUserGroupSettlement.Any())
+    {
+        <ul class="list-group mb-5">
+            @foreach (var payment in _currentUserGroupSettlement)
+            {
+                <li class="list-group-item">@payment.Price - @payment.PaymentFor.UserName</li>
+            }
+        </ul>
+    }
+
+    else
+    {
+        <p>No payments for you to make</p>
+    }
+}
+
+@code {
+
+    [CascadingParameter]
+    public CurrentUserProvider CurrentUserProvider { get; set; }
+
+    [Parameter]
+    public SinglePurposeUserGroupDto Group { get; set; }
+
+    private IEnumerable<PaymentRecordDto> _currentUserGroupSettlement;
+
+    private async Task LoadGroupSettlement()
+    {
+        var data = await _groupService.GetGroupSettlement(Group);
+        _currentUserGroupSettlement = data.Where(payment => payment.PaymentBy.Id == CurrentUserProvider.CurrentUser.Id);
+    }
+
+}
