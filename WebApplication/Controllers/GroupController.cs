@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using WebApplication.Algorithms;
+using WebApplication.Algorithms.Group;
 using WebApplication.Authentication;
 using WebApplication.Helpers;
 using WebApplication.Models;
@@ -243,6 +243,7 @@ namespace WebApplication.Controllers
                 .ThenInclude(group => group.PaymentTargets)
                 .ThenInclude(target => target.Target)
                 .FirstOrDefaultAsync();
+            
             var groupSettlement = GroupSolver.FindGroupSettlement(group);
             return groupSettlement
                 .Select(record => new PaymentRecordDto

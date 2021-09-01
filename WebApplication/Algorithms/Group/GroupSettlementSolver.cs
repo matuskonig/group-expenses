@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using WebApplication.Authentication;
 using WebApplication.Models;
 
-namespace WebApplication.Algorithms
+namespace WebApplication.Algorithms.Group
 {
     public static class GroupSolver
     {
-        // TODO: refactor
-        public static List<(ApplicationUser PaymentBy, ApplicationUser PaymentFor, decimal Price)> FindGroupSettlement(
+        public static IEnumerable<SinglePaymentRecord> FindGroupSettlement(
             SinglePurposeUserGroup group)
         {
             var paymentGraphEdges = group
@@ -17,25 +15,21 @@ namespace WebApplication.Algorithms
                 .FixWrongInput()
                 .MergePaymentsInOneDirection()
                 .MergePaymentsInOpposingDirection()
-                .ToHashSet();
+                .ToList();
 
-            var outEdges = paymentGraphEdges
+            var userPaidBalance = paymentGraphEdges
                 .GroupBy(payment => payment.PaymentBy)
-                .ToDictionary(grouping => grouping.Key, grouping => grouping);
-            var inEdges = paymentGraphEdges
+                .Select(grouping => (User: grouping.Key, Balance: -grouping.Sum(paymentRecord => paymentRecord.Price)));
+            var userReceivedBalance = paymentGraphEdges
                 .GroupBy(payment => payment.PaymentFor)
-                .ToDictionary(grouping => grouping.Key, grouping => grouping);
-            var userPaidBalance = outEdges.ToDictionary(pair => pair.Key,
-                pair => -pair.Value.Sum(paymentRecord => paymentRecord.Price));
-            var userReceived = inEdges.ToDictionary(pair => pair.Key,
-                pair => pair.Value.Sum(paymentRecord => paymentRecord.Price));
+                .Select(grouping => (User: grouping.Key, Balance: grouping.Sum(paymentRecord => paymentRecord.Price)));
             var totalBalance = userPaidBalance
-                .Union(userReceived)
-                .GroupBy(pair => pair.Key)
-                .ToDictionary(grouping => grouping.Key, grouping => grouping.Sum(pair => pair.Value));
+                .Concat(userReceivedBalance)
+                .GroupBy(userBalanceTuple => userBalanceTuple.User)
+                .ToDictionary(grouping => grouping.Key,
+                    grouping => grouping.Sum(userBalanceTuple => userBalanceTuple.Balance));
 
-
-            var result = new List<(ApplicationUser PaymentBy, ApplicationUser PaymentFor, decimal Price)>();
+            var result = new List<SinglePaymentRecord>();
             while (totalBalance.Any(pair => pair.Value != decimal.Zero))
             {
                 /*
@@ -57,12 +51,18 @@ namespace WebApplication.Algorithms
                 var (maxValueUser, _) = totalBalance.FirstOrDefault(pair => pair.Value == maxValue);
 
                 //This payment settles at least one user, thus the loop will end
-                var payment = (maxValueUser, minValueUser, Price: Math.Min(-minValue, maxValue));
+                var payment = new SinglePaymentRecord
+                {
+                    PaymentBy = maxValueUser,
+                    PaymentFor = minValueUser,
+                    Price = Math.Min(-minValue, maxValue)
+                };
 
                 totalBalance[minValueUser] += payment.Price;
                 totalBalance[maxValueUser] -= payment.Price;
                 result.Add(payment);
             }
+
             return result;
         }
 
@@ -124,22 +124,11 @@ namespace WebApplication.Algorithms
                         return paymentRecord;
 
                     var difference = paymentRecord.Price - otherPaymentRecord.Price;
-                    return difference switch
-                    {
-                        >0 => paymentRecord with { Price = difference },
-                        <0 => otherPaymentRecord with { Price = -difference },
-                        0 => null,
-                    };
+                    return difference > 0
+                        ? paymentRecord with { Price = difference }
+                        : null;
                 })
                 .Where(paymentRecord => paymentRecord != null);
-        }
-
-
-        public record SinglePaymentRecord
-        {
-            public ApplicationUser PaymentBy { get; init; }
-            public ApplicationUser PaymentFor { get; init; }
-            public decimal Price { get; init; }
         }
     }
 }
