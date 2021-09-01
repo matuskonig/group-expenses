@@ -5,19 +5,20 @@
 @using Frontend.Services
 @using Frontend.Components.Groups
 
-<h3>Groups</h3>
+<Authorized>
+    <h3>Groups</h3>
 
-<AddNewGroupForm/>
+    <AddNewGroupForm/>
 
-<div class="list-group">
-    @foreach (var group in GroupServiceProvider.UserGroups)
-    {
-        <li class="list-group-item">
-            <a onclick="@HandleGroupNavigation(group.Id)">@group.Name</a>
-        </li>
-    }
-</div>
-
+    <div class="list-group">
+        @foreach (var group in GroupServiceProvider.UserGroups)
+        {
+            <li class="list-group-item">
+                <a onclick="@HandleGroupNavigation(group.Id)">@group.Name</a>
+            </li>
+        }
+    </div>
+</Authorized>
 
 @code {
 

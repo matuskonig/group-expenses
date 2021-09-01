@@ -5,14 +5,18 @@
 @using Frontend.Services
 @inject UserApiService _userApiService
 
-@if (FoundGroup == null)
-{
-    return;
-}
+<Authorized>
+    @if (FoundGroup == null)
+    {
+        return;
+    }
 
-<GroupTitle Group="@FoundGroup"/>
-<GroupUsers Group="@FoundGroup"/>
-<GroupPayments Group="@FoundGroup"/>
+    <GroupTitle Group="@FoundGroup"/>
+    <GroupUsers Group="@FoundGroup"/>
+    <GroupSettlement Group="@FoundGroup"/>
+    <GroupPayments Group="@FoundGroup"/>
+</Authorized>
+
 
 @code {
 
