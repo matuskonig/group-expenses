@@ -20,7 +20,7 @@
 @if (incomingRequests?.Any() ?? false)
 {
     <h2>Incoming requests</h2>
-    <ul class="list-group">
+    <ul class="list-group max-content-container">
         @foreach (var incomingRequest in incomingRequests)
         {
             <li class="list-group-item">
@@ -38,7 +38,7 @@
 @if (friends?.Any() ?? false)
 {
     <h2>Friends</h2>
-    <ul class="list-group">
+    <ul class="list-group max-content-container">
         @foreach (var friendUser in friends)
         {
             <li class="list-group-item">

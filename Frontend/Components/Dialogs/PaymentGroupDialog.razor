@@ -15,48 +15,58 @@
         <dl class="row">
             <dt class="col-sm-6">Group name:</dt>
             <dd class="col-sm-6">
-                @(PaymentGroup.Name ?? "-")
-                <GroupNameDialog
-                    PaymentGroup="@PaymentGroup"
-                    OnSubmit="@OnGroupNameChange"/>
+                <div class="flex-space-between">
+                    <span>@(PaymentGroup.Name ?? "-")</span>
+                    <GroupNameDialog
+                        PaymentGroup="@PaymentGroup"
+                        OnSubmit="@OnGroupNameChange"/>
+                </div>
             </dd>
 
             <dt class="col-sm-6">Payment by:</dt>
             <dd class="col-sm-6">
-                @(PaymentGroup?.PaymentBy?.UserName ?? "-")
-                <UserSelectDialog
-                    Icon="@IconName.Pencil"
-                    DialogTitle="Set payer user"
-                    Users="@Group.GroupUsers"
-                    SelectedUserId="@PaymentGroup?.PaymentBy?.Id"
-                    OnSubmit="@OnPayerUserSelect"/>
+                <div class="flex-space-between">
+                    <span>@(PaymentGroup?.PaymentBy?.UserName ?? "-")</span>
+                    <UserSelectDialog
+                        Icon="@IconName.Pencil"
+                        DialogTitle="Set payer"
+                        Users="@Group.GroupUsers"
+                        SelectedUserId="@PaymentGroup?.PaymentBy?.Id"
+                        OnSubmit="@OnPayerUserSelect"/>
+                </div>
+
             </dd>
 
             <dt class="col-sm-6">Payment targets:</dt>
             <dd class="col-sm-6">
-                <SinglePaymentDialog
-                    DialogTitle="Add new payment"
-                    Icon="@IconName.Plus"
-                    Group="@Group"
-                    PaymentGroup="@PaymentGroup"
-                    OnSubmit="@OnNewSinglePaymentAdded"/>
+                <div class="mb-2">
+                    <SinglePaymentDialog
+                        DialogTitle="Add new payment"
+                        Icon="@IconName.Plus"
+                        Group="@Group"
+                        PaymentGroup="@PaymentGroup"
+                        OnSubmit="@OnNewSinglePaymentAdded"/>
+                </div>
+
                 @if (PaymentGroup?.PaymentTargets != null)
                 {
-                    <ul class="list-group">
+                    <ul class="list-group max-content-container">
                         @foreach (var payment in PaymentGroup.PaymentTargets)
                         {
-                            <li class="list-group-item">
-                                @payment.Price - @payment.Target.UserName
-                                <SinglePaymentDialog
-                                    DialogTitle="Edit payment"
-                                    Icon="@IconName.Pencil"
-                                    Group="@Group"
-                                    PaymentGroup="@PaymentGroup"
-                                    SinglePayment="@payment"
-                                    OnSubmit="@OnEditPayment"/>
-                                <DangerIconButton
-                                    @onclick="() => OnRemoveExistingPayment.InvokeAsync(payment)"
-                                    Icon="@IconName.Trash"/>
+                            <li class="list-group-item flex-space-between">
+                                <span>@payment.Price - @payment.Target.UserName</span>
+                                <span>
+                                    <SinglePaymentDialog
+                                        DialogTitle="Edit payment"
+                                        Icon="@IconName.Pencil"
+                                        Group="@Group"
+                                        PaymentGroup="@PaymentGroup"
+                                        SinglePayment="@payment"
+                                        OnSubmit="@OnEditPayment"/>
+                                    <DangerIconButton
+                                        @onclick="() => OnRemoveExistingPayment.InvokeAsync(payment)"
+                                        Icon="@IconName.Trash"/>
+                                </span>
                             </li>
                         }
                     </ul>

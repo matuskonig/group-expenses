@@ -4,7 +4,7 @@
 
 <h4>Payments</h4>
 
-<div class="mb-1">
+<div class="mb-2">
     <AddPaymentGroupDialog Group="@Group"/>
 </div>
 
@@ -12,7 +12,7 @@
 <div class="row">
     @foreach (var paymentGroup in Group.GroupPayments)
     {
-        <div class="col-4 pl-0 pr-0">
+        <div class="pl-0 pr-0">
             <GroupPaymentCard Group="@Group" PaymentGroup="@paymentGroup"/>
         </div>
     }
@@ -29,7 +29,7 @@
         await _groupService.ModifyUserGroup(new SinglePurposeUserGroupDto
         {
             Id = Group.Id,
-            GroupPayments = Group.GroupPayments.Except(new[] { paymentGroup })
+            GroupPayments = Group.GroupPayments.Where(group => group != paymentGroup)
         });
         await _groupService.LoadAll();
     }

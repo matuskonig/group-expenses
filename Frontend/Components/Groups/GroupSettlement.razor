@@ -12,20 +12,21 @@
 
 @if (_currentUserGroupSettlement != null)
 {
-    if (_currentUserGroupSettlement.Any())
-    {
-        <ul class="list-group mb-2">
-            @foreach (var payment in _currentUserGroupSettlement)
-            {
-                <li class="list-group-item">@payment.Price - @payment.PaymentFor.UserName</li>
-            }
-        </ul>
-    }
-
-    else
-    {
-        <p>No payments for you to make</p>
-    }
+    <div class="mb-2">
+        @if (_currentUserGroupSettlement.Any())
+        {
+            <ul class="max-content-container list-group">
+                @foreach (var payment in _currentUserGroupSettlement)
+                {
+                    <li class="list-group-item">@payment.Price - @payment.PaymentFor.UserName</li>
+                }
+            </ul>
+        }
+        else
+        {
+            <p>No payments for you to make</p>
+        }
+    </div>
 }
 
 @code {

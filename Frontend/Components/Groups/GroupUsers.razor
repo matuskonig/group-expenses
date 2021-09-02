@@ -19,18 +19,15 @@
         OnSubmit="@HandleAddNewFriend"/>
 </div>
 
-<ul class="list-group w-50">
+<ul class="max-content-container list-group mb-2">
     @foreach (var user in Group.GroupUsers)
     {
         <li class="list-group-item">
-            @user.UserName &nbsp;
+            <span class="mr-2">@user.UserName</span>
             <DangerIconButton @onclick="() => RemoveUserFromGroup(user)" Icon="@IconName.Trash"/>
         </li>
     }
 </ul>
-
-
-
 
 @code {
     private PropertyEqualityComparer<UserDto, string> _userByIdComparer = new(user => user.Id);

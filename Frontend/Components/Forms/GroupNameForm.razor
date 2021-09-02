@@ -2,12 +2,8 @@
 @using Entities.GroupDto
 
 <EditForm Model="@_model" OnValidSubmit="@HandleSubmit">
-    <dl class="row">
-        <dt class="col-sm-6">Group name:</dt>
-        <dd class="col-sm-6">
-            <InputText @bind-Value="@_model.Name"/>
-        </dd>
-    </dl>
+    <label for="groupName">Group name:</label>
+    <InputText id="groupName" @bind-Value="@_model.Name"/>
     <PrimaryButton type="submit">Submit</PrimaryButton>
 </EditForm>
 

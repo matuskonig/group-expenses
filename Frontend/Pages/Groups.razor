@@ -14,11 +14,11 @@
 
 <AddNewGroupForm/>
 
-<div class="container-sm list-group">
+<div class="max-content-container list-group">
     @foreach (var group in GroupServiceProvider.UserGroups)
     {
-        <li class="list-group-item">
-            @group.Name
+        <li class="list-group-item flex-space-between">
+            <span class="mr-2">@group.Name</span>
             <PrimaryIconButton Icon="@IconName.IconRight" @onclick="() => HandleGroupNavigation(group.Id)"/>
         </li>
     }

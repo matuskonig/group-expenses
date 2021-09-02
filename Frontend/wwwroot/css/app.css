@@ -52,3 +52,11 @@ a, .btn-link {
     right: 0.75rem;
     top: 0.5rem;
 }
+.flex-align-end {
+    display: flex;
+    justify-content: flex-end;
+}
+.flex-space-between{
+    display: flex;
+    justify-content: space-between;
+}

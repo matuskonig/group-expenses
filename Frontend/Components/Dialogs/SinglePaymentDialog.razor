@@ -22,13 +22,15 @@
 
             <dt class="col-sm-6">Payment to:</dt>
             <dd class="col-sm-6">
-                @(_model?.Target?.UserName ?? "-")
-                <UserSelectDialog
-                    SelectedUserId="@_model?.Target?.Id"
-                    DialogTitle="Select payment target"
-                    Icon="@IconName.Pencil"
-                    Users="@GetPossibleUsers()"
-                    OnSubmit="@ModelTargetChanged"/>
+                <div class="flex-space-between">
+                    <span>@(_model?.Target?.UserName ?? "-")</span>
+                    <UserSelectDialog
+                        SelectedUserId="@_model?.Target?.Id"
+                        DialogTitle="Select payment target"
+                        Icon="@IconName.Pencil"
+                        Users="@GetPossibleUsers()"
+                        OnSubmit="@ModelTargetChanged"/>
+                </div>
             </dd>
         </dl>
 

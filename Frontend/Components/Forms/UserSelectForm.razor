@@ -5,14 +5,20 @@
 <EditForm Model="@_model" OnValidSubmit="@HandleSubmit">
     <DataAnnotationsValidator/>
     <ValidationSummary/>
-    <InputSelect @bind-Value="@_model.SelectedUserId">
-        <option value=""></option>
-        @foreach (var user in Users)
-        {
-            <option value="@user.Id">@user.UserName</option>
-        }
-    </InputSelect>
-    <PrimaryButton type="submit">@SubmitTitle</PrimaryButton>
+    <div class="flex-space-between">
+        <div>
+            <label for="userSelect">User: </label>
+            <InputSelect id="userSelect" @bind-Value="@_model.SelectedUserId">
+                <option value=""></option>
+                @foreach (var user in Users)
+                {
+                    <option value="@user.Id">@user.UserName</option>
+                }
+            </InputSelect>
+        </div>
+
+        <PrimaryButton type="submit">@SubmitTitle</PrimaryButton>
+    </div>
 </EditForm>
 
 @code {
