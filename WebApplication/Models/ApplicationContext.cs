@@ -6,7 +6,6 @@ namespace WebApplication.Models
 {
     public sealed class ApplicationContext : IdentityDbContext<ApplicationUser>
     {
-        public DbSet<TodoItem> TodoItems { get; set; }
         public DbSet<FriendshipStatus> FriendRequests { get; set; }
         public DbSet<SinglePurposeUserGroup> UserGroups { get; set; }
         public DbSet<UnidirectionalPaymentGroup> PaymentGroups { get; set; }
