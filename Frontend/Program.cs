@@ -21,8 +21,7 @@ namespace Frontend
                 })
                 .AddScoped<UserApiService>()
                 .AddScoped<AuthApiService>()
-                .AddScoped<GroupService>()
-                .AddScoped<ITodoService, TodoService>();
+                .AddScoped<GroupService>();
             var host = builder.Build();
             await host.RunAsync();
         }
