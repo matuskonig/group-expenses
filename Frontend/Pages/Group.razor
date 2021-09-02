@@ -1,11 +1,14 @@
 ﻿@page "/Group/{groupId:guid}"
+
 @using Frontend.Providers
 @using Entities.GroupDto
 @using Frontend.Components.Groups
 @using Frontend.Services
 @using Microsoft.AspNetCore.Authorization
 @inject UserApiService _userApiService
+@inject GroupService _groupService
 @attribute [Authorize]
+
 @{
     var foundGroup = GetFoundGroup();
 }
@@ -33,7 +36,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await _userApiService.LoadCurrent();
+        await Task.WhenAll(_groupService.LoadAll(), _userApiService.LoadCurrent());
     }
 
 }

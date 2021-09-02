@@ -1,14 +1,16 @@
 ﻿@page "/"
-@inject NavigationManager _navigationManager
-@inject GroupService _groupService;
+
 @using Frontend.Providers
 @using Frontend.Services
 @using Frontend.Components.Groups
 @using Microsoft.AspNetCore.Authorization
 @using Frontend.Components.UI
 @using Frontend.Constants
-@attribute [Authorize]
 
+@inject NavigationManager _navigationManager
+@inject GroupService _groupService
+@inject UserApiService _userApiService
+@attribute [Authorize]
 
 <h3>Groups</h3>
 
@@ -40,9 +42,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        Console.WriteLine("initializing component");
-        /*if (CurrentUserProvider.CurrentUser != null)*/
-            await _groupService.LoadAll();
+        await Task.WhenAll(_userApiService.LoadCurrent(), _groupService.LoadAll());
     }
 
 }

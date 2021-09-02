@@ -12,16 +12,16 @@ namespace Frontend.Services
 {
     public class UserApiService
     {
-        private readonly HttpClient httpClient;
+        private readonly HttpClient _httpClient;
 
-        private UserDto currentUser;
+        private UserDto _currentUser;
 
         public UserDto CurrentUser
         {
-            get => currentUser;
+            get => _currentUser;
             private set
             {
-                currentUser = value;
+                _currentUser = value;
                 OnChange?.Invoke();
             }
         }
@@ -30,12 +30,12 @@ namespace Frontend.Services
 
         public UserApiService(HttpClient httpClient)
         {
-            this.httpClient = httpClient;
+            _httpClient = httpClient;
         }
 
         public async Task LoadCurrent()
         {
-            var data = await httpClient.GetFromJsonAsync<UserDto>("user/current");
+            var data = await _httpClient.GetFromJsonAsync<UserDto>("user/current");
             if (data != null)
             {
                 CurrentUser = data;
@@ -44,14 +44,14 @@ namespace Frontend.Services
 
         public async Task SendNewFriendRequest(UserDto user)
         {
-            var result = await httpClient.GetAsync($"user/sendNewRequest/{user.Id}");
+            var result = await _httpClient.GetAsync($"user/sendNewRequest/{user.Id}");
             if (result.StatusCode != HttpStatusCode.OK)
                 throw new ArgumentException("unable to send friend request");
         }
 
         public async Task AcceptFriendRequest(FriendRequestDto request)
         {
-            var response = await httpClient.GetAsync($"user/acceptRequest/{request.Id}");
+            var response = await _httpClient.GetAsync($"user/acceptRequest/{request.Id}");
             if (!response.IsSuccessStatusCode)
                 throw new ArgumentException("bad sth");
             var friendRequest = await response.Content.ReadFromJsonAsync<FriendRequestDto>();
@@ -62,7 +62,7 @@ namespace Frontend.Services
 
         public async Task RejectFriendRequest(FriendRequestDto request)
         {
-            var response = await httpClient.GetAsync($"user/rejectRequest/{request.Id}");
+            var response = await _httpClient.GetAsync($"user/rejectRequest/{request.Id}");
             if (!response.IsSuccessStatusCode)
                 throw new ArgumentException("bad sth");
             var friendRequest = await response.Content.ReadFromJsonAsync<FriendRequestDto>();
@@ -89,7 +89,7 @@ namespace Frontend.Services
 
         private async Task<SearchUserResponse> SearchUsers(SearchUserRequest request)
         {
-            var response = await httpClient.PostAsJsonAsync("user/searchUser", request);
+            var response = await _httpClient.PostAsJsonAsync("user/searchUser", request);
             var data = await response.Content.ReadFromJsonAsync<SearchUserResponse>();
             return data;
         }
