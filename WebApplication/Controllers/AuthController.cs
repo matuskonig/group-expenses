@@ -21,30 +21,27 @@ namespace WebApplication.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly UserManager<ApplicationUser> userManager;
-        private readonly RoleManager<IdentityRole> roleManager;
-        private readonly IConfiguration configuration;
-        private readonly ApplicationContext context;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IConfiguration _configuration;
 
         public AuthController(
             UserManager<ApplicationUser> userManager,
             RoleManager<IdentityRole> roleManager,
-            IConfiguration configuration,
-            ApplicationContext context)
+            IConfiguration configuration)
         {
-            this.userManager = userManager;
-            this.roleManager = roleManager;
-            this.configuration = configuration;
-            this.context = context;
+            _userManager = userManager;
+            _roleManager = roleManager;
+            _configuration = configuration;
         }
 
         [HttpPost("login")]
         public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest model)
         {
-            var user = await userManager.FindByEmailAsync(model.Email);
-            if (user == null || !await userManager.CheckPasswordAsync(user, model.Password))
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null || !await _userManager.CheckPasswordAsync(user, model.Password))
                 return Unauthorized();
-            var userRoles = await userManager.GetRolesAsync(user);
+            var userRoles = await _userManager.GetRolesAsync(user);
 
             var authClaims = new[]
             {
@@ -52,12 +49,10 @@ namespace WebApplication.Controllers
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             }.Concat(userRoles.Select(userRole => new Claim(ClaimTypes.Role, userRole)));
 
-            var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Secret"]));
+            var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
 
             var token = new JwtSecurityToken(
-                //issuer: configuration["JWT:ValidIssuer"],
-                //audience: configuration["JWT:ValidAudience"],
-                expires: DateTime.Now.AddDays(3),
+                expires: DateTime.Now.AddMonths(3),
                 claims: authClaims,
                 signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
             );
@@ -71,7 +66,7 @@ namespace WebApplication.Controllers
         [HttpPost("register")]
         public async Task<ActionResult> Register([FromBody] RegisterRequest model)
         {
-            var userExists = await userManager.FindByEmailAsync(model.Email);
+            var userExists = await _userManager.FindByEmailAsync(model.Email);
             if (userExists != null)
                 return StatusCode(StatusCodes.Status500InternalServerError);
 
@@ -81,20 +76,20 @@ namespace WebApplication.Controllers
                 SecurityStamp = Guid.NewGuid().ToString(),
                 UserName = model.Username
             };
-            var result = await userManager.CreateAsync(user, model.Password);
+            var result = await _userManager.CreateAsync(user, model.Password);
             
-            await userManager.AddToRoleAsync(user, UserRoles.User);
             await EnsureRolesExists();
+            await _userManager.AddToRoleAsync(user, UserRoles.User);
             return result.Succeeded
                 ? Ok()
                 : StatusCode(StatusCodes.Status500InternalServerError);
         }
         private async Task EnsureRolesExists()
         {
-            if (await roleManager.RoleExistsAsync(UserRoles.User))
-                await roleManager.CreateAsync(new IdentityRole(UserRoles.User));
-            if (await roleManager.RoleExistsAsync(UserRoles.Admin))
-                await roleManager.CreateAsync(new IdentityRole(UserRoles.Admin));
+            if (await _roleManager.RoleExistsAsync(UserRoles.User))
+                await _roleManager.CreateAsync(new IdentityRole(UserRoles.User));
+            if (await _roleManager.RoleExistsAsync(UserRoles.Admin))
+                await _roleManager.CreateAsync(new IdentityRole(UserRoles.Admin));
         }
     }
 }

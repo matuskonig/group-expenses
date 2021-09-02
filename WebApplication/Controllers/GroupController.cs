@@ -27,7 +27,6 @@ namespace WebApplication.Controllers
             _context = context;
         }
 
-        [Authorize]
         [HttpGet("currentUserGroup")]
         public async Task<ActionResult<IEnumerable<SinglePurposeUserGroupDto>>> GetCurrentUserGroups()
         {
@@ -48,7 +47,6 @@ namespace WebApplication.Controllers
             return serializedData;
         }
 
-        [Authorize]
         [HttpPost("addNewGroup")]
         public async Task<ActionResult<SinglePurposeUserGroupDto>> AddNewDefaultGroup(
             [FromBody] SinglePurposeUserGroupDto groupDto)
@@ -67,7 +65,6 @@ namespace WebApplication.Controllers
         }
 
 
-        [Authorize]
         [HttpPatch("modifyUserGroup")]
         public async Task<ActionResult<SinglePurposeUserGroupDto>> ModifyUserGroup(
             [FromBody] SinglePurposeUserGroupDto modifiedGroup)
@@ -141,7 +138,6 @@ namespace WebApplication.Controllers
             return foundGroup.Serialize();
         }
 
-        [Authorize]
         [HttpPatch("modifyPaymentGroup")]
         public async Task<ActionResult<UnidirectionalPaymentGroupDto>> ModifyPaymentGroup(
             [FromBody] UnidirectionalPaymentGroupDto modifiedPaymentGroup)
@@ -202,7 +198,6 @@ namespace WebApplication.Controllers
             return foundPaymentGroup.Serialize();
         }
 
-        [Authorize]
         [HttpPatch("modifySinglePayment")]
         public async Task<ActionResult<SinglePaymentDto>> ModifySinglePayment(
             [FromBody] SinglePaymentDto paymentDto)
@@ -228,7 +223,6 @@ namespace WebApplication.Controllers
             return paymentDto;
         }
 
-        [Authorize]
         [HttpGet("getGroupSettlement/{groupId:guid}")]
         public async Task<ActionResult<IEnumerable<PaymentRecordDto>>> GetGroupBalance(Guid groupId)
         {
@@ -243,7 +237,7 @@ namespace WebApplication.Controllers
                 .ThenInclude(group => group.PaymentTargets)
                 .ThenInclude(target => target.Target)
                 .FirstOrDefaultAsync();
-            
+
             var groupSettlement = GroupSolver.FindGroupSettlement(group);
             return groupSettlement
                 .Select(record => new PaymentRecordDto

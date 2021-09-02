@@ -19,13 +19,13 @@ namespace WebApplication.Controllers
     [ApiController]
     public class UserController : Controller
     {
-        private readonly UserManager<ApplicationUser> userManager;
-        private readonly ApplicationContext context;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ApplicationContext _context;
 
         public UserController(UserManager<ApplicationUser> userManager, ApplicationContext context)
         {
-            this.userManager = userManager;
-            this.context = context;
+            _userManager = userManager;
+            _context = context;
         }
 
         [HttpGet("sendNewRequest/{id}")]
@@ -33,9 +33,9 @@ namespace WebApplication.Controllers
         {
             try
             {
-                var user = await userManager.GetUserAsync(User);
-                var otherUser = await context.Users.FindAsync(id);
-                var possibleExistingRelation = await context.FriendRequests
+                var user = await _userManager.GetUserAsync(User);
+                var otherUser = await _context.Users.FindAsync(id);
+                var possibleExistingRelation = await _context.FriendRequests
                     .FirstOrDefaultAsync(request =>
                         request.From == user && request.To == otherUser && request.State != FriendRequestState.Rejected);
                 if (otherUser == null || possibleExistingRelation != null || user.Id == otherUser.Id)
@@ -49,8 +49,8 @@ namespace WebApplication.Controllers
                     Created = DateTime.Now,
                     Modified = DateTime.Now
                 };
-                context.FriendRequests.Add(relation);
-                await context.SaveChangesAsync();
+                _context.FriendRequests.Add(relation);
+                await _context.SaveChangesAsync();
                 return relation.Serialize();
             }
             catch (Exception)
@@ -58,18 +58,17 @@ namespace WebApplication.Controllers
                 return BadRequest();
             }
         }
-        [Authorize]
         [HttpGet("acceptRequest/{id:guid}")]
         public async Task<ActionResult<FriendRequestDto>> AcceptFriendRequest(Guid id)
         {
             try
             {
-                var friendRequest = await context.FriendRequests
+                var friendRequest = await _context.FriendRequests
                     .Where(status => status.Id == id)
                     .Include(status => status.From)
                     .Include(status => status.To)
                     .FirstOrDefaultAsync();
-                var currentUser = await userManager.GetUserAsync(User);
+                var currentUser = await _userManager.GetUserAsync(User);
 
                 if (friendRequest == null || friendRequest.To != currentUser)
                 {
@@ -79,7 +78,7 @@ namespace WebApplication.Controllers
                 friendRequest.State = FriendRequestState.Accepted;
                 friendRequest.Modified = DateTime.Now;
 
-                await context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
                 return friendRequest.Serialize();
             }
             catch (Exception)
@@ -87,17 +86,16 @@ namespace WebApplication.Controllers
                 return BadRequest();
             }
         }
-        [Authorize]
         [HttpGet("rejectRequest/{id:guid}")]
         public async Task<ActionResult<FriendRequestDto>> RejectFriendRequest(Guid id)
         {
             try
             {
-                var request = await context.FriendRequests.FindAsync(id);
+                var request = await _context.FriendRequests.FindAsync(id);
                 if(request == null || request.State == FriendRequestState.Rejected)
                     return BadRequest();
                 request.State = FriendRequestState.Rejected;
-                await context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
                 return request.Serialize();
             }
             catch (Exception)
@@ -105,14 +103,13 @@ namespace WebApplication.Controllers
                 return BadRequest();
             }
         }
-        [Authorize]
         [HttpPost("searchUser")]
         public async Task<ActionResult<SearchUserResponse>> SearchFriendByName([FromBody] SearchUserRequest request)
         {
-            var currentUser = await userManager.GetUserAsync(User);
+            var currentUser = await _userManager.GetUserAsync(User);
             var usersByUserName = request.UserName == null
                 ? null
-                : await context.Users
+                : await _context.Users
                     .Where(applicationUser => applicationUser.UserName.Contains(request.UserName) &&
                                               applicationUser.UserName != currentUser.UserName
                     )
@@ -127,8 +124,8 @@ namespace WebApplication.Controllers
         [HttpGet("current")]
         public async Task<ActionResult<UserDto>> GetCurrent()
         {
-            var userId = userManager.GetUserId(User);
-            var user = await context.Users
+            var userId = _userManager.GetUserId(User);
+            var user = await _context.Users
                 .AsSplitQuery()
                 .Where(u => u.Id == userId)
                 .Include(applicationUser => applicationUser.IncomingRequests)
