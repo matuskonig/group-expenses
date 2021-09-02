@@ -1,11 +1,10 @@
-﻿<DangerButton OnClick="@OnClick">
+﻿<DangerButton @attributes="@ButtonAttributes">
     <i class="oi @Icon"></i>
 </DangerButton>
 
 @code {
-
-    [Parameter]
-    public EventCallback OnClick { get; set; }
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object> ButtonAttributes { get; set; }
 
     [Parameter]
     public string Icon { get; set; }

@@ -1,13 +1,11 @@
-﻿<button class="btn btn-primary btn-sm" @onclick="@OnClick" type="@Type">
+﻿<button class="btn btn-primary btn-sm" @attributes="@ButtonAttributes">
     @ChildContent
 </button>
 
 @code {
-    [Parameter]
-    public string Type { get; set; }
-    
-    [Parameter]
-    public EventCallback OnClick { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object> ButtonAttributes { get; set; }
 
     [Parameter]
     public RenderFragment ChildContent { get; set; }

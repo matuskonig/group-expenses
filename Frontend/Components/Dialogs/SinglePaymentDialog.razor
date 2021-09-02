@@ -6,7 +6,7 @@
 
 <OpenableDialog Context="singlePaymentDialogContext">
     <Opener>
-        <PrimaryIconButton OnClick="@singlePaymentDialogContext.OpenDialog" Icon="@Icon"/>
+        <PrimaryIconButton @onclick="@singlePaymentDialogContext.OpenDialog" Icon="@Icon"/>
     </Opener>
     <Title>
         @DialogTitle
@@ -32,7 +32,7 @@
             </dd>
         </dl>
 
-        <PrimaryButton OnClick="() => HandleSubmit(singlePaymentDialogContext)">Submit</PrimaryButton>
+        <PrimaryButton @onclick="() => HandleSubmit(singlePaymentDialogContext)">Submit</PrimaryButton>
     </ChildContent>
 </OpenableDialog>
 

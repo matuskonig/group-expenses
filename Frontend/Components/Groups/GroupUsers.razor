@@ -24,7 +24,7 @@
     {
         <li class="list-group-item">
             @user.UserName &nbsp;
-            <DangerIconButton OnClick="() => RemoveUserFromGroup(user)" Icon="@IconName.Trash"/>
+            <DangerIconButton @onclick="() => RemoveUserFromGroup(user)" Icon="@IconName.Trash"/>
         </li>
     }
 </ul>

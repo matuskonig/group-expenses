@@ -6,7 +6,7 @@
 
 <OpenableDialog >
     <Opener>
-        <PrimaryIconButton OnClick="@context.OpenDialog" Icon="@Icon"/>
+        <PrimaryIconButton @onclick="@context.OpenDialog" Icon="@Icon"/>
     </Opener>
     <Title>
         @Title
@@ -55,7 +55,7 @@
                                     SinglePayment="@payment"
                                     OnSubmit="@OnEditPayment"/>
                                 <DangerIconButton
-                                    OnClick="() => OnRemoveExistingPayment.InvokeAsync(payment)"
+                                    @onclick="() => OnRemoveExistingPayment.InvokeAsync(payment)"
                                     Icon="@IconName.Trash"/>
                             </li>
                         }
@@ -67,7 +67,7 @@
 
         @if (OnSubmit.HasDelegate)
         {
-            <PrimaryButton OnClick="() => HandleSubmit(context)">Submit</PrimaryButton>
+            <PrimaryButton @onclick="() => HandleSubmit(context)">Submit</PrimaryButton>
         }
     </ChildContent>
 </OpenableDialog>

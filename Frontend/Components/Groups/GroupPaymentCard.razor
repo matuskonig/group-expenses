@@ -17,7 +17,7 @@
         </ul>
         <div class="flex-row">
             <EditPaymentGroupDialog Group="@Group" PaymentGroup="@PaymentGroup"/>
-            <DangerIconButton OnClick="@RemovePaymentGroup" Icon="@IconName.Trash"></DangerIconButton>
+            <DangerIconButton @onclick="@RemovePaymentGroup" Icon="@IconName.Trash"></DangerIconButton>
         </div>
     </div>
 </div>
