@@ -6,16 +6,18 @@
 @using Microsoft.AspNetCore.Authorization
 @inject UserApiService _userApiService
 @attribute [Authorize]
-
-@if (FoundGroup == null)
+@{
+    var foundGroup = GetFoundGroup();
+}
+@if (foundGroup == null)
 {
     return;
 }
 
-<GroupTitle Group="@FoundGroup"/>
-<GroupUsers Group="@FoundGroup"/>
-<GroupSettlement Group="@FoundGroup"/>
-<GroupPayments Group="@FoundGroup"/>
+<GroupTitle Group="@foundGroup"/>
+<GroupUsers Group="@foundGroup"/>
+<GroupSettlement Group="@foundGroup"/>
+<GroupPayments Group="@foundGroup"/>
 
 
 @code {
@@ -26,7 +28,7 @@
     [CascadingParameter]
     public GroupServiceProvider GroupServiceProvider { get; set; }
 
-    private SinglePurposeUserGroupDto FoundGroup =>
+    private SinglePurposeUserGroupDto GetFoundGroup() =>
         GroupServiceProvider.UserGroups.FirstOrDefault(group => group.Id == GroupId);
 
     protected override async Task OnInitializedAsync()
