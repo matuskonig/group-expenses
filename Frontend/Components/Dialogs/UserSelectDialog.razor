@@ -8,7 +8,7 @@
 
 <OpenableDialog>
     <Opener>
-        <PrimaryIconButton @onclick="@context.OpenDialog" Icon="@Icon"></PrimaryIconButton>
+        <PrimaryIconButton @onclick="() => HandleOpen(context)" Icon="@Icon"></PrimaryIconButton>
     </Opener>
     <Title>
         @DialogTitle
@@ -17,7 +17,8 @@
         <UserSelectForm
             OnSubmit="user => HandleSubmit(user, context)"
             Users="@Users"
-            SelectedUserId="@SelectedUserId"/>
+            SelectedUserId="@SelectedUserId"
+            SubmitTitle="@SubmitTitle"/>
     </ChildContent>
 </OpenableDialog>
 
@@ -34,9 +35,22 @@
 
     [Parameter]
     public string SelectedUserId { get; set; }
+    
+    [Parameter]
+    public string SubmitTitle { get; set; } = "Submit";
 
     [Parameter]
     public EventCallback<UserDto> OnSubmit { get; set; }
+    
+    [Parameter]
+    public EventCallback OnOpen { get; set; }
+
+    private async Task HandleOpen(OpenableDialog context)
+    {
+        if (OnOpen.HasDelegate)
+            await OnOpen.InvokeAsync();
+        context.OpenDialog();
+    }
 
     private async Task HandleSubmit(UserDto user, OpenableDialog context)
     {

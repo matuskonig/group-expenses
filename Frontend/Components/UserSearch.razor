@@ -1,38 +1,39 @@
 ﻿@using Entities.AuthDto
 @using Frontend.Services
-@inject UserApiService userApiService
+@using Frontend.Components.Dialogs
+@using Frontend.Constants
+@inject UserApiService _userApiService
 
+<h2>Add friend</h2>
 
-<EditForm Model="@model" OnValidSubmit="@OnValidSubmit">
-    <InputText @bind-Value="@model.UserName"/>
-    <button type="submit">Search</button>
+<EditForm Model="@_model">
+    <label for="username">Username: </label>
+    <InputText id="username" @bind-Value="@_model.UserName"/>
+    <UserSelectDialog
+        Icon="@IconName.Plus"
+        DialogTitle="Found users"
+        SubmitTitle="Send request"
+        Users="@_foundUsers"
+        OnOpen="@HandleOpen"
+        OnSubmit="@SendRequest"/>
 </EditForm>
-@if (foundUsers?.Any() ?? false)
-{
-    foreach (var user in foundUsers)
-    {
-        <p>
-            @user.UserName - <button @onclick="SendRequest(user)">Send request</button>
-        </p>
-    }
-}
 
 @code {
-    private IEnumerable<UserDto> foundUsers; //TODO: toto robilo problemy
-    private FormModel model = new();
+    private IEnumerable<UserDto> _foundUsers;
+    private FormModel _model = new();
 
-    private async Task OnValidSubmit()
+    private async Task HandleOpen()
     {
-        foundUsers = await userApiService.SearchFriendByName(model.UserName);
+        _foundUsers = await _userApiService.SearchFriendByName(_model.UserName);
     }
 
-    private Action SendRequest(UserDto user) => async () =>
+    private async Task SendRequest(UserDto user)
     {
-        await userApiService.SendNewFriendRequest(user);
-        await userApiService.LoadCurrent();
-    };
+        await _userApiService.SendNewFriendRequest(user);
+        await _userApiService.LoadCurrent();
+    }
 
-    record FormModel
+    private record FormModel
     {
         public string UserName { get; set; }
     }
