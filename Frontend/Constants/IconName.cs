@@ -23,5 +23,6 @@
         public static EnumValue<string> IconRight = new("oi-arrow-right");
         public static EnumValue<string> Check = new("oi-check");
         public static EnumValue<string> X = new("oi-x");
+        public static EnumValue<string> AccountLogout = new("oi-account-logout");
     }
 }
