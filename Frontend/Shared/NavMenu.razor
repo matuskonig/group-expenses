@@ -1,4 +1,5 @@
 ﻿@using Frontend.Providers
+@using Frontend.Components.UI
 
 <div class="top-row pl-4 navbar navbar-dark">
     <a class="navbar-brand" href="">Group expenses</a>
@@ -7,10 +8,13 @@
     </button>
 </div>
 <div class="@NavMenuCssClass" @onclick="@ToggleNavMenu">
+    @if (AuthStateProvider.IsLoggedIn)
+    {
+        <UserAvatar/>
+    }
     <ul class="nav flex-column">
         @if (AuthStateProvider.IsLoggedIn)
         {
-            <button type="button" @onclick="AuthStateProvider.Logout">Logout</button>
             <li class="nav-item px-3">
                 <NavLink class="nav-link" href="/" m Match="@NavLinkMatch.All">
                     <span class="oi oi-euro" aria-hidden="true"></span> Groups

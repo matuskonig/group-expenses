@@ -1,0 +1,18 @@
+﻿@using Frontend.Providers
+@using Frontend.Constants
+<div class="avatar">
+    <span>
+        <span class="oi oi-person" aria-hidden="true"></span> @CurrentUserProvider?.CurrentUser?.UserName
+    </span>
+    <PrimaryIconButton Icon="@IconName.AccountLogout" @onclick="AuthStateProvider.Logout"/>
+</div>
+
+@code {
+
+    [CascadingParameter]
+    public CurrentUserProvider CurrentUserProvider { get; set; }
+
+    [CascadingParameter]
+    public AuthStateProvider AuthStateProvider { get; set; }
+
+}
