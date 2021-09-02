@@ -4,21 +4,30 @@
 @using Frontend.Components.UI
 
 <h3>Login</h3>
-<EditForm Model="@_request" OnValidSubmit="OnSubmit">
-    Email: <InputText id="email" @bind-Value="@_request.Email"/>
-    Password: <InputText id="password" @bind-Value="@_request.Password"/>
 
-    <PrimaryButton type="submit">Submit</PrimaryButton>
+<EditForm Model="@_model" OnValidSubmit="HandleSubmit" class="max-content-container">
+    <ValidationSummary/>
+    <div class="form-group">
+        <label for="email">Email:&nbsp;</label>
+        <InputText id="email" placeholder="Email" class="form-control" @bind-Value="@_model.Email"/>
+
+        <label for="password">Password:&nbsp;</label>
+        <InputText id="password" placeholder="Password" type="password" class="form-control" @bind-Value="@_model.Password"/>
+    </div>
+
+    <PrimaryButton type="submit">Login</PrimaryButton>
 </EditForm>
 
 @code {
-    private readonly LoginRequest _request = new();
 
     [CascadingParameter]
     public AuthStateProvider AuthStateProvider { get; set; }
 
-    private Task OnSubmit()
+    private readonly LoginRequest _model = new();
+
+    private async Task HandleSubmit()
     {
-        return AuthStateProvider.Login(_request);
+        await AuthStateProvider.Login(_model);
     }
+
 }
