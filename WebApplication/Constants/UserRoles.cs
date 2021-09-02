@@ -1,4 +1,4 @@
-﻿namespace WebApplication.Authentication
+﻿namespace WebApplication.Constants
 {
     public static class UserRoles
     {
