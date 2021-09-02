@@ -14,7 +14,7 @@
 {
     if (_currentUserGroupSettlement.Any())
     {
-        <ul class="list-group mb-5">
+        <ul class="list-group mb-2">
             @foreach (var payment in _currentUserGroupSettlement)
             {
                 <li class="list-group-item">@payment.Price - @payment.PaymentFor.UserName</li>
