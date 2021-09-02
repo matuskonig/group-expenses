@@ -5,6 +5,8 @@
 @using Frontend.Services
 @using Frontend.Components.Groups
 @using Microsoft.AspNetCore.Authorization
+@using Frontend.Components.UI
+@using Frontend.Constants
 @attribute [Authorize]
 
 
@@ -12,11 +14,12 @@
 
 <AddNewGroupForm/>
 
-<div class="list-group">
+<div class="container-sm list-group">
     @foreach (var group in GroupServiceProvider.UserGroups)
     {
         <li class="list-group-item">
-            <a onclick="@HandleGroupNavigation(group.Id)">@group.Name</a>
+            @group.Name
+            <PrimaryIconButton Icon="@IconName.IconRight" @onclick="() => HandleGroupNavigation(group.Id)"/>
         </li>
     }
 </div>
@@ -30,9 +33,9 @@
     [CascadingParameter]
     public GroupServiceProvider GroupServiceProvider { get; set; }
 
-    private Action HandleGroupNavigation(Guid groupId)
+    private void HandleGroupNavigation(Guid groupId)
     {
-        return () => _navigationManager.NavigateTo($"Group/{groupId}");
+        _navigationManager.NavigateTo($"Group/{groupId}");
     }
 
     protected override async Task OnInitializedAsync()

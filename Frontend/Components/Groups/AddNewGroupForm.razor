@@ -1,10 +1,14 @@
 ﻿@using Frontend.Services
+@using Frontend.Components.UI
+@using Frontend.Constants
 @inject GroupService _groupService
-<h6>Add new group</h6>
+
+<h4>Add new group</h4>
+
 <EditForm Model="@_values" OnValidSubmit="@OnSubmit">
     <label for="name">Group name: </label>
-    <InputText id="name" @bind-Value="@_values.Name"></InputText>
-    <button type="submit">Submit</button>
+    <InputText id="name" @bind-Value="@_values.Name"/>
+    <PrimaryIconButton type="submit" Icon="@IconName.Plus"/>
 </EditForm>
 
 @code {

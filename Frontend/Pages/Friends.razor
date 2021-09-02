@@ -6,34 +6,50 @@
 @using Frontend.Extensions
 @using Frontend.Components
 @using Microsoft.AspNetCore.Authorization
+@using Frontend.Components.UI
+@using Frontend.Constants
 @inject UserApiService _userApiService
 @attribute [Authorize]
 
 
 <h2>Friends</h2>
+
 <UserSearch/>
-@if (IncomingRequests?.Any() ?? false)
+
+@{
+    var incomingRequests = GetIncomingRequests();
+}
+
+@if (incomingRequests?.Any() ?? false)
 {
     <h2>Incoming requests</h2>
-    @foreach (var incomingRequest in IncomingRequests)
-    {
-        <p>
-            @incomingRequest.From.UserName
-            <button @onclick="@AcceptRequest(incomingRequest)">Accept</button>
-            <button @onclick="@RejectRequest(incomingRequest)">Reject</button>
-        </p>
-    }
+    <ul class="list-group">
+        @foreach (var incomingRequest in incomingRequests)
+        {
+            <li class="list-group-item">
+                @incomingRequest.From.UserName
+                <PrimaryIconButton Icon="@IconName.Check" @onclick="() => AcceptRequest(incomingRequest)"/>
+                <DangerIconButton Icon="@IconName.X" @onclick="() => RejectRequest(incomingRequest)"/>
+            </li>
+        }
+    </ul>
 }
-@if (FriendUsers != null && FriendUsers.Any())
+@{
+    var friends = GetFriends();
+}
+
+@if (friends?.Any() ?? false)
 {
     <h2>Friends</h2>
-    @foreach (var friendUser in FriendUsers)
-    {
-        <p>
-            @friendUser.UserName
-            <button @onclick="Unfriend(friendUser)">Reject</button>
-        </p>
-    }
+    <ul class="list-group">
+        @foreach (var friendUser in friends)
+        {
+            <li class="list-group-item">
+                @friendUser.UserName
+                <DangerIconButton Icon="@IconName.Trash" @onclick="() => Unfriend(friendUser)"/>
+            </li>
+        }
+    </ul>
 }
 
 
@@ -46,12 +62,12 @@
     [CascadingParameter]
     public AuthStateProvider AuthStateProvider { get; set; }
 
-    private IEnumerable<FriendRequestDto> IncomingRequests =>
+    private IEnumerable<FriendRequestDto> GetIncomingRequests() =>
         UserProvider?.CurrentUser?.IncomingRequests
             ?.Where(request => request.State == FriendRequestState.WaitingForAccept);
 
 
-    private IEnumerable<UserDto> FriendUsers => UserProvider?.CurrentUser?.Friends();
+    private IEnumerable<UserDto> GetFriends() => UserProvider?.CurrentUser?.Friends();
 
     protected override async Task OnInitializedAsync()
     {
@@ -59,19 +75,19 @@
             await _userApiService.LoadCurrent();
     }
 
-    private Func<Task> AcceptRequest(FriendRequestDto friendRequest) => async () =>
+    private async Task AcceptRequest(FriendRequestDto friendRequest)
     {
         await _userApiService.AcceptFriendRequest(friendRequest);
         await _userApiService.LoadCurrent();
-    };
+    }
 
-    private Func<Task> RejectRequest(FriendRequestDto friendRequestDto) => () =>
+    private async Task RejectRequest(FriendRequestDto friendRequestDto)
     {
-        return _userApiService.RejectFriendRequest(friendRequestDto)
-            .ContinueWith(_ => _userApiService.LoadCurrent());
-    };
+        await _userApiService.RejectFriendRequest(friendRequestDto);
+        await _userApiService.LoadCurrent();
+    }
 
-    private Func<Task> Unfriend(UserDto user) => async () =>
+    private async Task Unfriend(UserDto user)
     {
         var possibleSentRequest = _userApiService.CurrentUser.SentRequests
             .FirstOrDefault(request => request.To.Id == user.Id && request.State == FriendRequestState.Accepted);
@@ -82,6 +98,6 @@
             return;
         await _userApiService.RejectFriendRequest(possibleRequest);
         await _userApiService.LoadCurrent();
-    };
+    }
 
 }

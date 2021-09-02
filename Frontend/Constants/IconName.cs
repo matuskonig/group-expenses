@@ -20,5 +20,8 @@
         public static EnumValue<string> Plus = new("oi-plus");
         public static EnumValue<string> Pencil = new("oi-pencil");
         public static EnumValue<string> Trash = new("oi-trash");
+        public static EnumValue<string> IconRight = new("oi-arrow-right");
+        public static EnumValue<string> Check = new("oi-check");
+        public static EnumValue<string> X = new("oi-x");
     }
 }
