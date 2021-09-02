@@ -3,19 +3,19 @@
 @using Entities.GroupDto
 @using Frontend.Components.Groups
 @using Frontend.Services
+@using Microsoft.AspNetCore.Authorization
 @inject UserApiService _userApiService
+@attribute [Authorize]
 
-<Authorized>
-    @if (FoundGroup == null)
-    {
-        return;
-    }
+@if (FoundGroup == null)
+{
+    return;
+}
 
-    <GroupTitle Group="@FoundGroup"/>
-    <GroupUsers Group="@FoundGroup"/>
-    <GroupSettlement Group="@FoundGroup"/>
-    <GroupPayments Group="@FoundGroup"/>
-</Authorized>
+<GroupTitle Group="@FoundGroup"/>
+<GroupUsers Group="@FoundGroup"/>
+<GroupSettlement Group="@FoundGroup"/>
+<GroupPayments Group="@FoundGroup"/>
 
 
 @code {

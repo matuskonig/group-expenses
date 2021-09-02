@@ -4,21 +4,23 @@
 @using Frontend.Providers
 @using Frontend.Services
 @using Frontend.Components.Groups
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
 
-<Authorized>
-    <h3>Groups</h3>
 
-    <AddNewGroupForm/>
+<h3>Groups</h3>
 
-    <div class="list-group">
-        @foreach (var group in GroupServiceProvider.UserGroups)
-        {
-            <li class="list-group-item">
-                <a onclick="@HandleGroupNavigation(group.Id)">@group.Name</a>
-            </li>
-        }
-    </div>
-</Authorized>
+<AddNewGroupForm/>
+
+<div class="list-group">
+    @foreach (var group in GroupServiceProvider.UserGroups)
+    {
+        <li class="list-group-item">
+            <a onclick="@HandleGroupNavigation(group.Id)">@group.Name</a>
+        </li>
+    }
+</div>
+
 
 @code {
 
@@ -35,7 +37,8 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (CurrentUserProvider.CurrentUser != null)
+        Console.WriteLine("initializing component");
+        /*if (CurrentUserProvider.CurrentUser != null)*/
             await _groupService.LoadAll();
     }
 

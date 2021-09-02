@@ -1,0 +1,31 @@
+﻿@using Frontend.Providers
+@using Microsoft.AspNetCore.Authorization
+@using Frontend.Pages
+
+<RouteView RouteData="@GetViewRouteData()" DefaultLayout="@DefaultLayout"/>
+
+@code {
+
+    [Parameter]
+    public RouteData RouteData { get; set; }
+
+    [Parameter]
+    public Type DefaultLayout { get; set; }
+
+    [CascadingParameter]
+    public AuthStateProvider AuthStateProvider { get; set; }
+
+    private RouteData _notFoundRouteData = new(typeof(NotLoggedIn), new Dictionary<string, object>());
+    private RouteData GetViewRouteData() => IsAuthorized() ? RouteData : _notFoundRouteData;
+
+    private bool IsAuthorized()
+    {
+        var pageType = RouteData.PageType;
+        if (Attribute.GetCustomAttribute(pageType, typeof(AuthorizeAttribute)) is AuthorizeAttribute)
+        {
+            return AuthStateProvider.IsLoggedIn;
+        }
+        return true;
+    }
+
+}

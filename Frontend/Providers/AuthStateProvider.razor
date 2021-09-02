@@ -13,9 +13,6 @@
     [Parameter]
     public RenderFragment ChildContent { get; set; }
 
-    [Parameter]
-    public RenderFragment NotLoggedInDefault { get; set; }
-
     public bool IsLoggedIn => _authApiService.JwtSecurityToken?.ValidTo > DateTime.Now;
 
     public async Task Login(LoginRequest request)
