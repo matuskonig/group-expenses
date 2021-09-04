@@ -31,78 +31,61 @@ namespace WebApplication.Controllers
         [HttpGet("sendNewRequest/{id}")]
         public async Task<ActionResult<FriendRequestDto>> SendNewFriendRequest(string id)
         {
-            try
-            {
-                var user = await _userManager.GetUserAsync(User);
-                var otherUser = await _context.Users.FindAsync(id);
-                var possibleExistingRelation = await _context.FriendRequests
-                    .FirstOrDefaultAsync(request =>
-                        request.From == user && request.To == otherUser && request.State != FriendRequestState.Rejected);
-                if (otherUser == null || possibleExistingRelation != null || user.Id == otherUser.Id)
-                    return BadRequest();
-
-                var relation = new FriendshipStatus
-                {
-                    From = user,
-                    To = otherUser,
-                    State = FriendRequestState.WaitingForAccept,
-                    Created = DateTime.Now,
-                    Modified = DateTime.Now
-                };
-                _context.FriendRequests.Add(relation);
-                await _context.SaveChangesAsync();
-                return relation.Serialize();
-            }
-            catch (Exception)
-            {
+            var user = await _userManager.GetUserAsync(User);
+            var otherUser = await _context.Users.FindAsync(id);
+            var possibleExistingRelation = await _context.FriendRequests
+                .FirstOrDefaultAsync(request =>
+                    request.From == user && request.To == otherUser &&
+                    request.State != FriendRequestState.Rejected);
+            if (otherUser == null || possibleExistingRelation != null || user.Id == otherUser.Id)
                 return BadRequest();
-            }
+
+            var relation = new FriendshipStatus
+            {
+                From = user,
+                To = otherUser,
+                State = FriendRequestState.WaitingForAccept,
+                Created = DateTime.Now,
+                Modified = DateTime.Now
+            };
+            _context.FriendRequests.Add(relation);
+            await _context.SaveChangesAsync();
+            return relation.Serialize();
         }
+
         [HttpGet("acceptRequest/{id:guid}")]
         public async Task<ActionResult<FriendRequestDto>> AcceptFriendRequest(Guid id)
         {
-            try
-            {
-                var friendRequest = await _context.FriendRequests
-                    .Where(status => status.Id == id)
-                    .Include(status => status.From)
-                    .Include(status => status.To)
-                    .FirstOrDefaultAsync();
-                var currentUser = await _userManager.GetUserAsync(User);
+            var friendRequest = await _context.FriendRequests
+                .Where(status => status.Id == id)
+                .Include(status => status.From)
+                .Include(status => status.To)
+                .FirstOrDefaultAsync();
+            var currentUser = await _userManager.GetUserAsync(User);
 
-                if (friendRequest == null || friendRequest.To != currentUser)
-                {
-                    return BadRequest();
-                }
-
-                friendRequest.State = FriendRequestState.Accepted;
-                friendRequest.Modified = DateTime.Now;
-
-                await _context.SaveChangesAsync();
-                return friendRequest.Serialize();
-            }
-            catch (Exception)
+            if (friendRequest == null || friendRequest.To != currentUser)
             {
                 return BadRequest();
             }
+
+            friendRequest.State = FriendRequestState.Accepted;
+            friendRequest.Modified = DateTime.Now;
+
+            await _context.SaveChangesAsync();
+            return friendRequest.Serialize();
         }
+
         [HttpGet("rejectRequest/{id:guid}")]
         public async Task<ActionResult<FriendRequestDto>> RejectFriendRequest(Guid id)
         {
-            try
-            {
-                var request = await _context.FriendRequests.FindAsync(id);
-                if(request == null || request.State == FriendRequestState.Rejected)
-                    return BadRequest();
-                request.State = FriendRequestState.Rejected;
-                await _context.SaveChangesAsync();
-                return request.Serialize();
-            }
-            catch (Exception)
-            {
+            var request = await _context.FriendRequests.FindAsync(id);
+            if (request == null || request.State == FriendRequestState.Rejected)
                 return BadRequest();
-            }
+            request.State = FriendRequestState.Rejected;
+            await _context.SaveChangesAsync();
+            return request.Serialize();
         }
+
         [HttpPost("searchUser")]
         public async Task<ActionResult<SearchUserResponse>> SearchFriendByName([FromBody] SearchUserRequest request)
         {
