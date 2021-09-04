@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
@@ -13,7 +12,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using WebApplication.Authentication;
 using WebApplication.Constants;
-using WebApplication.Models;
 
 namespace WebApplication.Controllers
 {
@@ -50,7 +48,6 @@ namespace WebApplication.Controllers
             }.Concat(userRoles.Select(userRole => new Claim(ClaimTypes.Role, userRole)));
 
             var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
-
             var token = new JwtSecurityToken(
                 expires: DateTime.Now.AddMonths(3),
                 claims: authClaims,
