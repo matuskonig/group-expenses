@@ -1,4 +1,4 @@
-﻿namespace Entities.GroupDto
+﻿namespace Entities.Dto.GroupDto
 {
     public struct PaymentRecordDto
     {

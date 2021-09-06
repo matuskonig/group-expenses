@@ -4,7 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
-using Entities.GroupDto;
+using Entities.Dto.GroupDto;
 using Frontend.Helpers;
 
 namespace Frontend.Services

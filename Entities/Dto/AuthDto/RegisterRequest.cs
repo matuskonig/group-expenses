@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Entities.AuthDto
+namespace Entities.Dto.AuthDto
 {
     public class RegisterRequest
     {

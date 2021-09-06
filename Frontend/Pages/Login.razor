@@ -1,11 +1,11 @@
 ﻿@page "/Login"
-@using Entities.AuthDto
+@using Entities.Dto.AuthDto
 @using Frontend.Providers
 @using Frontend.Components.UI
 
 <h3>Login</h3>
 
-<EditForm Model="@_model" OnValidSubmit="HandleSubmit" class="max-content-container">
+<EditForm Model="@_model" OnValidSubmit="@HandleSubmit" class="max-content-container">
     <ValidationSummary/>
     <div class="form-group">
         <label for="email">Email:&nbsp;</label>

@@ -1,4 +1,4 @@
-﻿namespace Entities.UserDto
+﻿namespace Entities.Dto.UserDto
 {
     public class SearchUserRequest
     {

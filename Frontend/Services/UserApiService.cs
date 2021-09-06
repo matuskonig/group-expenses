@@ -5,8 +5,8 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
-using Entities.AuthDto;
-using Entities.UserDto;
+using Entities.Dto.AuthDto;
+using Entities.Dto.UserDto;
 
 namespace Frontend.Services
 {

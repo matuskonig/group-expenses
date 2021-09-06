@@ -1,7 +1,7 @@
 ﻿using System;
 using Entities.Enums;
 
-namespace Entities.AuthDto
+namespace Entities.Dto.AuthDto
 {
     public class FriendRequestDto
     {

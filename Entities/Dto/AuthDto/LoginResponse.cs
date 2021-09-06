@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Entities.AuthDto
+namespace Entities.Dto.AuthDto
 {
     public class LoginResponse
     {

@@ -1,6 +1,6 @@
 ﻿using System.Linq;
-using Entities.AuthDto;
-using Entities.GroupDto;
+using Entities.Dto.AuthDto;
+using Entities.Dto.GroupDto;
 using WebApplication.Authentication;
 using WebApplication.Models;
 

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Entities.AuthDto;
+using Entities.Dto.AuthDto;
 using Entities.Enums;
 
 namespace Frontend.Extensions

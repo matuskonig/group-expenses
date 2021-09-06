@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Entities.GroupDto
+namespace Entities.Dto.GroupDto
 {
     public class SinglePaymentDto
     {

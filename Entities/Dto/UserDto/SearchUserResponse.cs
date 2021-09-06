@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Entities.UserDto
+namespace Entities.Dto.UserDto
 {
     public class SearchUserResponse
     {

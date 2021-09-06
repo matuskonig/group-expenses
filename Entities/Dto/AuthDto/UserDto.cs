@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Entities.AuthDto
+namespace Entities.Dto.AuthDto
 {
     public class UserDto
     {

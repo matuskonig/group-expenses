@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Entities.GroupDto
+namespace Entities.Dto.GroupDto
 {
     public class UnidirectionalPaymentGroupDto
     {
