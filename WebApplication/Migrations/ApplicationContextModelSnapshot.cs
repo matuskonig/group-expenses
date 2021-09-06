@@ -261,20 +261,20 @@ namespace WebApplication.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid?>("PaymentGroupId")
+                        .HasColumnType("TEXT");
+
                     b.Property<decimal>("Price")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("TargetId")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid?>("UnidirectionalPaymentGroupId")
-                        .HasColumnType("TEXT");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("TargetId");
+                    b.HasIndex("PaymentGroupId");
 
-                    b.HasIndex("UnidirectionalPaymentGroupId");
+                    b.HasIndex("TargetId");
 
                     b.ToTable("SinglePayments");
                 });
@@ -305,14 +305,14 @@ namespace WebApplication.Migrations
                     b.Property<string>("PaymentById")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid?>("SinglePurposeUserGroupId")
+                    b.Property<Guid?>("UserGroupId")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
                     b.HasIndex("PaymentById");
 
-                    b.HasIndex("SinglePurposeUserGroupId");
+                    b.HasIndex("UserGroupId");
 
                     b.ToTable("PaymentGroups");
                 });
@@ -404,13 +404,15 @@ namespace WebApplication.Migrations
 
             modelBuilder.Entity("WebApplication.Models.SinglePayment", b =>
                 {
+                    b.HasOne("WebApplication.Models.UnidirectionalPaymentGroup", "PaymentGroup")
+                        .WithMany("PaymentTargets")
+                        .HasForeignKey("PaymentGroupId");
+
                     b.HasOne("WebApplication.Authentication.ApplicationUser", "Target")
                         .WithMany()
                         .HasForeignKey("TargetId");
 
-                    b.HasOne("WebApplication.Models.UnidirectionalPaymentGroup", null)
-                        .WithMany("PaymentTargets")
-                        .HasForeignKey("UnidirectionalPaymentGroupId");
+                    b.Navigation("PaymentGroup");
 
                     b.Navigation("Target");
                 });
@@ -421,11 +423,13 @@ namespace WebApplication.Migrations
                         .WithMany()
                         .HasForeignKey("PaymentById");
 
-                    b.HasOne("WebApplication.Models.SinglePurposeUserGroup", null)
+                    b.HasOne("WebApplication.Models.SinglePurposeUserGroup", "UserGroup")
                         .WithMany("GroupPayments")
-                        .HasForeignKey("SinglePurposeUserGroupId");
+                        .HasForeignKey("UserGroupId");
 
                     b.Navigation("PaymentBy");
+
+                    b.Navigation("UserGroup");
                 });
 
             modelBuilder.Entity("WebApplication.Authentication.ApplicationUser", b =>
