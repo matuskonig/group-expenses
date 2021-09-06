@@ -1,18 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Entities.Dto.AuthDto;
 using Entities.Dto.UserDto;
+using Frontend.Extensions;
 
 namespace Frontend.Services
 {
     public class UserApiService
     {
         private readonly HttpClient _httpClient;
+        private readonly AlertMessageService _alertMessageService;
 
         private UserDto _currentUser;
 
@@ -28,32 +29,42 @@ namespace Frontend.Services
 
         public event Action OnChange;
 
-        public UserApiService(HttpClient httpClient)
+        public UserApiService(HttpClient httpClient, AlertMessageService alertMessageService)
         {
             _httpClient = httpClient;
+            _alertMessageService = alertMessageService;
         }
 
         public async Task LoadCurrent()
         {
-            var data = await _httpClient.GetFromJsonAsync<UserDto>("user/current");
-            if (data != null)
+            var response = await _httpClient.GetAsync("user/current");
+            if (response.IsSuccessStatusCode)
             {
+                var data = await response.Content.ReadFromJsonAsync<UserDto>();
                 CurrentUser = data;
+            }
+            else
+            {
+                await _alertMessageService.ShowNetworkError(response);
             }
         }
 
         public async Task SendNewFriendRequest(UserDto user)
         {
-            var result = await _httpClient.GetAsync($"user/sendNewRequest/{user.Id}");
-            if (result.StatusCode != HttpStatusCode.OK)
-                throw new ArgumentException("unable to send friend request");
+            var response = await _httpClient.GetAsync($"user/sendNewRequest/{user.Id}");
+            if (!response.IsSuccessStatusCode)
+                await _alertMessageService.ShowNetworkError(response);
         }
 
         public async Task AcceptFriendRequest(FriendRequestDto request)
         {
             var response = await _httpClient.GetAsync($"user/acceptRequest/{request.Id}");
             if (!response.IsSuccessStatusCode)
-                throw new ArgumentException("bad sth");
+            {
+                await _alertMessageService.ShowNetworkError(response);
+                return;
+            }
+
             var friendRequest = await response.Content.ReadFromJsonAsync<FriendRequestDto>();
             UpdateIncomingFriendRequest(friendRequest);
             UpdateSendFriendRequest(friendRequest);
@@ -64,7 +75,11 @@ namespace Frontend.Services
         {
             var response = await _httpClient.GetAsync($"user/rejectRequest/{request.Id}");
             if (!response.IsSuccessStatusCode)
-                throw new ArgumentException("bad sth");
+            {
+                await _alertMessageService.ShowNetworkError(response);
+                return;
+            }
+
             var friendRequest = await response.Content.ReadFromJsonAsync<FriendRequestDto>();
             UpdateIncomingFriendRequest(friendRequest);
             UpdateSendFriendRequest(friendRequest);
@@ -73,31 +88,40 @@ namespace Frontend.Services
 
         private void UpdateIncomingFriendRequest(FriendRequestDto updatedFriendRequest)
         {
-            CurrentUser.IncomingRequests = CurrentUser.IncomingRequests.Select(incomingRequest =>
-                incomingRequest.Id == updatedFriendRequest?.Id
-                    ? updatedFriendRequest
-                    : incomingRequest).ToArray();
+            CurrentUser.IncomingRequests = CurrentUser.IncomingRequests
+                .Select(incomingRequest =>
+                    incomingRequest.Id == updatedFriendRequest?.Id
+                        ? updatedFriendRequest
+                        : incomingRequest)
+                .ToArray();
         }
 
         private void UpdateSendFriendRequest(FriendRequestDto updatedFriendRequest)
         {
-            CurrentUser.SentRequests = CurrentUser.SentRequests.Select(sentRequest =>
-                sentRequest.Id == updatedFriendRequest?.Id
+            CurrentUser.SentRequests = CurrentUser.SentRequests
+                .Select(sentRequest => sentRequest.Id == updatedFriendRequest?.Id
                     ? updatedFriendRequest
-                    : sentRequest).ToArray();
+                    : sentRequest)
+                .ToArray();
         }
 
         private async Task<SearchUserResponse> SearchUsers(SearchUserRequest request)
         {
             var response = await _httpClient.PostAsJsonAsync("user/searchUser", request);
+            if (!response.IsSuccessStatusCode)
+            {
+                await _alertMessageService.ShowNetworkError(response);
+                return null;
+            }
+
             var data = await response.Content.ReadFromJsonAsync<SearchUserResponse>();
             return data;
         }
 
         public async Task<IEnumerable<UserDto>> SearchFriendByName(string username)
         {
-            var data = await SearchUsers(new SearchUserRequest {UserName = username});
-            return data.UsersByUserName;
+            var data = await SearchUsers(new SearchUserRequest { UserName = username });
+            return data?.UsersByUserName;
         }
     }
 }

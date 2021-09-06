@@ -16,16 +16,21 @@ namespace Frontend.Services
         public async Task ShowMessage(string message, AlertState state)
         {
             var alertMessage = new Alert { Message = message, State = state };
-            Messages.Add(alertMessage);
-            OnChange?.Invoke();
+
+            AddMessage(alertMessage);
             await Task.Delay(MessageDuration);
-            Messages.Remove(alertMessage);
-            OnChange?.Invoke();
+            RemoveMessage(alertMessage);
         }
 
         public async Task ShowErrorMessage(string message)
         {
             await ShowMessage(message, AlertState.Danger);
+        }
+
+        private void AddMessage(Alert alert)
+        {
+            Messages.Add(alert);
+            OnChange?.Invoke();
         }
 
         public void RemoveMessage(Alert alert)

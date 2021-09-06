@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Entities.Dto.GroupDto;
+using Frontend.Extensions;
 using Frontend.Helpers;
 
 namespace Frontend.Services
@@ -12,18 +13,20 @@ namespace Frontend.Services
     public class GroupService
     {
         private readonly HttpClient _httpClient;
+        private AlertMessageService _alertMessageService;
         private IEnumerable<SinglePurposeUserGroupDto> _userGroups = Enumerable.Empty<SinglePurposeUserGroupDto>();
         public event Action OnChange;
 
-        public GroupService(HttpClient httpClient)
+        public GroupService(HttpClient httpClient, AlertMessageService alertMessageService)
         {
             _httpClient = httpClient;
+            _alertMessageService = alertMessageService;
         }
 
         public IEnumerable<SinglePurposeUserGroupDto> UserGroups
         {
             get => _userGroups;
-            set
+            private set
             {
                 _userGroups = value;
                 OnChange?.Invoke();
@@ -32,11 +35,18 @@ namespace Frontend.Services
 
         public async Task LoadAll()
         {
-            var data =
-                await _httpClient.GetFromJsonAsync<IEnumerable<SinglePurposeUserGroupDto>>("group/currentUserGroup");
-            if (data != null)
+            var response = await _httpClient.GetAsync("group/currentUserGroup");
+            if (response.IsSuccessStatusCode)
             {
-                UserGroups = data;
+                var data = await response.Content.ReadFromJsonAsync<IEnumerable<SinglePurposeUserGroupDto>>();
+                if (data != null)
+                {
+                    UserGroups = data;
+                }
+            }
+            else
+            {
+                await _alertMessageService.ShowNetworkError(response);
             }
         }
 
@@ -45,45 +55,60 @@ namespace Frontend.Services
             var response = await _httpClient.PostAsJsonAsync("group/addNewGroup",
                 new SinglePurposeUserGroupDto { Name = groupName });
             if (!response.IsSuccessStatusCode)
-                throw new Exception("sth went wrong");
-            var data = await response.Content.ReadFromJsonAsync<SinglePurposeUserGroupDto>();
-            return data;
+            {
+                await _alertMessageService.ShowNetworkError(response);
+                return null;
+            }
+
+            return await response.Content.ReadFromJsonAsync<SinglePurposeUserGroupDto>();
         }
 
         public async Task<SinglePurposeUserGroupDto> ModifyUserGroup(SinglePurposeUserGroupDto group)
         {
             var response = await _httpClient.PatchAsJsonAsync("group/modifyUserGroup", group);
             if (!response.IsSuccessStatusCode)
-                throw new Exception("sth went wrong");
-            var data = await response.Content.ReadFromJsonAsync<SinglePurposeUserGroupDto>();
-            return data;
+            {
+                await _alertMessageService.ShowNetworkError(response);
+                return null;
+            }
+
+            return await response.Content.ReadFromJsonAsync<SinglePurposeUserGroupDto>();
         }
 
         public async Task<UnidirectionalPaymentGroupDto> ModifyPaymentGroup(UnidirectionalPaymentGroupDto paymentGroup)
         {
             var response = await _httpClient.PatchAsJsonAsync("group/modifyPaymentGroup", paymentGroup);
             if (!response.IsSuccessStatusCode)
-                throw new Exception("sth went wrong");
-            var data = await response.Content.ReadFromJsonAsync<UnidirectionalPaymentGroupDto>();
-            return data;
+            {
+                await _alertMessageService.ShowNetworkError(response);
+                return null;
+            }
+
+            return await response.Content.ReadFromJsonAsync<UnidirectionalPaymentGroupDto>();
         }
 
         public async Task<SinglePaymentDto> ModifySinglePayment(SinglePaymentDto payment)
         {
             var response = await _httpClient.PatchAsJsonAsync("group/modifySinglePayment", payment);
             if (!response.IsSuccessStatusCode)
-                throw new Exception("something is wrong");
-            var data = await response.Content.ReadFromJsonAsync<SinglePaymentDto>();
-            return data;
+            {
+                await _alertMessageService.ShowNetworkError(response);
+                return null;
+            }
+
+            return await response.Content.ReadFromJsonAsync<SinglePaymentDto>();
         }
 
         public async Task<IEnumerable<PaymentRecordDto>> GetGroupSettlement(SinglePurposeUserGroupDto group)
         {
             var response = await _httpClient.GetAsync($"group/getGroupSettlement/{group.Id}");
             if (!response.IsSuccessStatusCode)
-                throw new Exception("sth went wrong");
-            var data = await response.Content.ReadFromJsonAsync<IEnumerable<PaymentRecordDto>>();
-            return data;
+            {
+                await _alertMessageService.ShowNetworkError(response);
+                return null;
+            }
+
+            return await response.Content.ReadFromJsonAsync<IEnumerable<PaymentRecordDto>>();
         }
     }
 }

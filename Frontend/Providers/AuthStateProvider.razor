@@ -17,8 +17,8 @@
 
     public async Task Login(LoginRequest request)
     {
-        await _authApiService.Login(request);
-        _navigationManager.NavigateTo("/");
+        if (await _authApiService.Login(request))
+            _navigationManager.NavigateTo("/");
     }
 
 

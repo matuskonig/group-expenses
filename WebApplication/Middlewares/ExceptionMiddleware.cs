@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Entities.Dto.General;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -36,7 +37,7 @@ namespace WebApplication.Middlewares
             var statusCode = exception is HttpResponseException responseException
                 ? (int)responseException.StatusCode
                 : 500;
-            var response = new ProblemDetails
+            var response = new ProblemDetail
             {
                 Title = exception.Message,
                 Detail = _hostEnvironment.IsDevelopment() ? exception.StackTrace : null,

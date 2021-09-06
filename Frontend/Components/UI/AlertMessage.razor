@@ -1,7 +1,7 @@
 ﻿@using Frontend.Helpers
 @using Frontend.Enums
 
-<div class="alert @GetAlertType(Alert.State)">
+<div class="alert @GetAlertType(Alert.State) flex-space-between">
     @Alert.Message
     <button type="button" class="btn btn-close" @onclick="@OnClose">X</button>
 </div>
