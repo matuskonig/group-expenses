@@ -19,6 +19,7 @@ namespace Frontend
                 {
                     BaseAddress = new Uri(builder.Configuration["BaseAddress"]),
                 })
+                .AddScoped<AlertMessageService>()
                 .AddScoped<UserApiService>()
                 .AddScoped<AuthApiService>()
                 .AddScoped<GroupService>();

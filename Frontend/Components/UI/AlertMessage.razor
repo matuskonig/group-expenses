@@ -1,0 +1,23 @@
+﻿@using Frontend.Helpers
+@using Frontend.Enums
+
+<div class="alert @GetAlertType(Alert.State)">
+    @Alert.Message
+    <button type="button" class="btn btn-close" @onclick="@OnClose">X</button>
+</div>
+
+@code {
+
+    [Parameter]
+    public Alert Alert { get; set; }
+
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    private static string GetAlertType(AlertState state) => state switch {
+        AlertState.Danger => "alert-danger",
+        AlertState.Success => "alert-success",
+        _ => throw new NotImplementedException($"${nameof(GetAlertType)} - unimplemented {nameof(AlertState)}")
+        };
+
+}

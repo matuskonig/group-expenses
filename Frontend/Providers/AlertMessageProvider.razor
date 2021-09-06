@@ -1,0 +1,25 @@
+﻿@using Frontend.Services
+@using Frontend.Components.UI
+@implements IDisposable
+@inject AlertMessageService _alertMessageService
+
+<div class="alert-wrapper">
+    @foreach (var alert in _alertMessageService.Messages)
+    {
+        <AlertMessage Alert="@alert" OnClose="() => _alertMessageService.RemoveMessage(alert)"/>
+    }
+</div>
+
+@code {
+
+    protected override void OnInitialized()
+    {
+        _alertMessageService.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        _alertMessageService.OnChange -= StateHasChanged;
+    }
+
+}
