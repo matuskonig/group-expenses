@@ -5,13 +5,14 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Entities.AuthDto;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using WebApplication.Authentication;
+using WebApplication.Checks;
 using WebApplication.Constants;
+using WebApplication.Helpers;
 
 namespace WebApplication.Controllers
 {
@@ -37,15 +38,17 @@ namespace WebApplication.Controllers
         public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest model)
         {
             var user = await _userManager.FindByEmailAsync(model.Email);
-            if (user == null || !await _userManager.CheckPasswordAsync(user, model.Password))
-                return Unauthorized();
-            var userRoles = await _userManager.GetRolesAsync(user);
+            Check.NotNull(user, "User does not exist");
+            Check.Guard(await _userManager.CheckPasswordAsync(user, model.Password),
+                "Username or password is not correct");
 
+            var userRoles = await _userManager.GetRolesAsync(user);
+            var userClaims = userRoles.Select(userRole => new Claim(ClaimTypes.Role, userRole));
             var authClaims = new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-            }.Concat(userRoles.Select(userRole => new Claim(ClaimTypes.Role, userRole)));
+            }.Concat(userClaims);
 
             var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
             var token = new JwtSecurityToken(
@@ -61,11 +64,9 @@ namespace WebApplication.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<ActionResult> Register([FromBody] RegisterRequest model)
+        public async Task<ActionResult<UserDto>> Register([FromBody] RegisterRequest model)
         {
-            var userExists = await _userManager.FindByEmailAsync(model.Email);
-            if (userExists != null)
-                return StatusCode(StatusCodes.Status500InternalServerError);
+            Check.Null(await _userManager.FindByEmailAsync(model.Email), "User is already registered");
 
             var user = new ApplicationUser
             {
@@ -74,13 +75,13 @@ namespace WebApplication.Controllers
                 UserName = model.Username
             };
             var result = await _userManager.CreateAsync(user, model.Password);
-            
+
             await EnsureRolesExists();
             await _userManager.AddToRoleAsync(user, UserRoles.User);
-            return result.Succeeded
-                ? Ok()
-                : StatusCode(StatusCodes.Status500InternalServerError);
+            Check.Guard(result.Succeeded, "Creating the user was unsuccessful");
+            return user.Serialize(serializeRequests: false);
         }
+
         private async Task EnsureRolesExists()
         {
             if (await _roleManager.RoleExistsAsync(UserRoles.User))

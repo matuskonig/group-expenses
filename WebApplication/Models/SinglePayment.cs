@@ -10,5 +10,6 @@ namespace WebApplication.Models
         public Guid Id { get; set; }
         public decimal Price { get; set; }
         public ApplicationUser Target { get; set; }
+        public UnidirectionalPaymentGroup PaymentGroup { get; set; }
     }
 }

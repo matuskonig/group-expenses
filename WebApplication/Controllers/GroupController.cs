@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApplication.Algorithms.Group;
 using WebApplication.Authentication;
+using WebApplication.Checks;
 using WebApplication.Helpers;
 using WebApplication.Models;
 
@@ -40,11 +41,11 @@ namespace WebApplication.Controllers
                 .ThenInclude(paymentGroup => paymentGroup.GroupPayments)
                 .ThenInclude(unidirectionalPaymentGroup => unidirectionalPaymentGroup.PaymentTargets)
                 .FirstOrDefaultAsync();
-
-            var serializedData = user?.PaymentGroups
+            Check.NotNull(user, "User not found");
+            var data = user.PaymentGroups
                 ?.Select(paymentGroup => paymentGroup.Serialize())
                 ?.ToArray();
-            return serializedData;
+            return data;
         }
 
         [HttpPost("addNewGroup")]
@@ -69,22 +70,21 @@ namespace WebApplication.Controllers
         public async Task<ActionResult<SinglePurposeUserGroupDto>> ModifyUserGroup(
             [FromBody] SinglePurposeUserGroupDto modifiedGroup)
         {
-            if (modifiedGroup.Id == Guid.Empty)
-                return BadRequest("no id specified");
+            Check.Guard(modifiedGroup.Id != Guid.Empty, "No group id provided");
             var foundGroup = await _context.UserGroups
                 .Where(group => group.Id == modifiedGroup.Id)
                 .Include(group => group.GroupUsers)
                 .Include(group => group.GroupPayments)
                 .FirstOrDefaultAsync();
             var currentUserId = _userManager.GetUserId(User);
+            Check.NotNull(foundGroup, "Group does not exists");
+            Check.Guard(foundGroup.GroupUsers.Any(user => user.Id == currentUserId),
+                "You have to be part of the group to modify it");
 
-            if (foundGroup == null)
-                return BadRequest("group not found");
-            if (foundGroup.GroupUsers.All(user => user.Id != currentUserId))
-                return BadRequest("you have to be part of the group to modify it ");
-
-
-            foundGroup.Name = modifiedGroup?.Name ?? foundGroup.Name;
+            if (modifiedGroup.Name != null)
+            {
+                foundGroup.Name = modifiedGroup.Name;
+            }
 
             var (addedUsers, deletedUsers) = modifiedGroup.GroupUsers == null
                 ? (Enumerable.Empty<ApplicationUser>(), Enumerable.Empty<ApplicationUser>())
@@ -102,7 +102,7 @@ namespace WebApplication.Controllers
 
             var addedGroupUsers = addedGroups
                 .SelectMany(group => group.PaymentTargets.Select(target => target.Target).Append(group.PaymentBy));
-            var fak = addedUsers.Concat(addedGroupUsers).Select(user => user.Id).ToHashSet();
+            var fak = addedUsers.Concat(addedGroupUsers).Select(user => user.Id).ToHashSet(); //TODO: rename
             var loadedUsers = await _context.Users
                 .Where(user => fak.Contains(user.Id))
                 .ToDictionaryAsync(user => user.Id);
@@ -133,7 +133,6 @@ namespace WebApplication.Controllers
                 foundGroup.GroupPayments.Add(toAdd);
             }
 
-
             await _context.SaveChangesAsync();
             return foundGroup.Serialize();
         }
@@ -142,18 +141,27 @@ namespace WebApplication.Controllers
         public async Task<ActionResult<UnidirectionalPaymentGroupDto>> ModifyPaymentGroup(
             [FromBody] UnidirectionalPaymentGroupDto modifiedPaymentGroup)
         {
-            if (modifiedPaymentGroup.Id == Guid.Empty)
-                return BadRequest("no Id provided");
+            Check.Guard(modifiedPaymentGroup.Id != Guid.Empty, "Payment group id not provided");
+
             var foundPaymentGroup = await _context.PaymentGroups
+                .AsSplitQuery()
                 .Where(paymentGroup => paymentGroup.Id == modifiedPaymentGroup.Id)
                 .Include(paymentGroup => paymentGroup.PaymentBy)
                 .Include(paymentGroup => paymentGroup.PaymentTargets)
                 .ThenInclude(singlePayment => singlePayment.Target)
+                .Include(paymentGroup => paymentGroup.UserGroup)
+                .ThenInclude(userGroup => userGroup.GroupUsers)
                 .FirstOrDefaultAsync();
-            if (foundPaymentGroup == null)
-                return BadRequest("missing payment group");
-            //TODO: check, whether it is part of some group with user
-            _context.Entry(foundPaymentGroup).OriginalValues.SetValues(modifiedPaymentGroup);
+
+            Check.NotNull(foundPaymentGroup, "Payment group not found");
+
+            var currentUserId = _userManager.GetUserId(User);
+            Check.Guard(foundPaymentGroup.UserGroup.GroupUsers.Any(user => user.Id == currentUserId),
+                "You are not a member of a group");
+
+
+            _context.Entry(foundPaymentGroup).OriginalValues
+                .SetValues(modifiedPaymentGroup); //TODO: zistit, co to robi vlastne
             var (addedPayments, removedPayments) =
                 modifiedPaymentGroup.PaymentTargets == null
                     ? (Enumerable.Empty<SinglePayment>(), Enumerable.Empty<SinglePayment>())
@@ -199,18 +207,22 @@ namespace WebApplication.Controllers
         }
 
         [HttpPatch("modifySinglePayment")]
-        public async Task<ActionResult<SinglePaymentDto>> ModifySinglePayment(
-            [FromBody] SinglePaymentDto paymentDto)
+        public async Task<ActionResult<SinglePaymentDto>> ModifySinglePayment([FromBody] SinglePaymentDto paymentDto)
         {
-            if (paymentDto.Id == Guid.Empty)
-                return BadRequest("missing id");
+            Check.Guard(paymentDto.Id != Guid.Empty, "Single payment id not provided");
 
             var foundPayment = await _context.SinglePayments
                 .Where(payment => payment.Id == paymentDto.Id)
                 .Include(payment => payment.Target)
+                .Include(payment => payment.PaymentGroup)
+                .ThenInclude(paymentGroup => paymentGroup.UserGroup)
+                .ThenInclude(userGroup => userGroup.GroupUsers)
                 .FirstOrDefaultAsync();
-            if (foundPayment == null)
-                return BadRequest("payment not found");
+            Check.NotNull(foundPayment, "Single payment not found");
+
+            var currentUserId = _userManager.GetUserId(User);
+            Check.Guard(foundPayment.PaymentGroup.UserGroup.GroupUsers.Any(user => user.Id == currentUserId),
+                "You have to be part of the group to modify it");
 
             foundPayment.Price = paymentDto.Price;
             if (paymentDto.Target?.Id != null)
@@ -237,7 +249,8 @@ namespace WebApplication.Controllers
                 .ThenInclude(group => group.PaymentTargets)
                 .ThenInclude(target => target.Target)
                 .FirstOrDefaultAsync();
-
+            Check.Guard(group.GroupUsers.Contains(currentUser),
+                "You have to be part of the group to get the group settlement");
             var groupSettlement = GroupSolver.FindGroupSettlement(group);
             return groupSettlement
                 .Select(record => new PaymentRecordDto

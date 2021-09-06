@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using Entities.GroupDto;
 using WebApplication.Authentication;
 
 namespace WebApplication.Models
@@ -12,5 +13,6 @@ namespace WebApplication.Models
         public string Name { get; set; }
         public ApplicationUser PaymentBy { get; set; }
         public virtual ICollection<SinglePayment> PaymentTargets { get; set; }
+        public SinglePurposeUserGroup UserGroup { get; set; }
     }
 }

@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApplication.Authentication;
+using WebApplication.Checks;
 using WebApplication.Helpers;
 using WebApplication.Models;
 
@@ -37,8 +38,9 @@ namespace WebApplication.Controllers
                 .FirstOrDefaultAsync(request =>
                     request.From == user && request.To == otherUser &&
                     request.State != FriendRequestState.Rejected);
-            if (otherUser == null || possibleExistingRelation != null || user.Id == otherUser.Id)
-                return BadRequest();
+            Check.NotNull(otherUser, $"Other user does not exist");
+            Check.Null(possibleExistingRelation, "Request to this user has already been sent");
+            Check.Guard(user.Id != otherUser.Id, "You cant send request to yourself");
 
             var relation = new FriendshipStatus
             {
@@ -62,11 +64,8 @@ namespace WebApplication.Controllers
                 .Include(status => status.To)
                 .FirstOrDefaultAsync();
             var currentUser = await _userManager.GetUserAsync(User);
-
-            if (friendRequest == null || friendRequest.To != currentUser)
-            {
-                return BadRequest();
-            }
+            Check.NotNull(friendRequest, "Friend request does not exist");
+            Check.Guard(friendRequest.To == currentUser, "Friend request was sent to other than current user");
 
             friendRequest.State = FriendRequestState.Accepted;
             friendRequest.Modified = DateTime.Now;
@@ -79,8 +78,9 @@ namespace WebApplication.Controllers
         public async Task<ActionResult<FriendRequestDto>> RejectFriendRequest(Guid id)
         {
             var request = await _context.FriendRequests.FindAsync(id);
-            if (request == null || request.State == FriendRequestState.Rejected)
-                return BadRequest();
+            Check.NotNull(request, "Friend request not found");
+            Check.Guard(request.State != FriendRequestState.Rejected, "Friend request has already been rejected");
+
             request.State = FriendRequestState.Rejected;
             await _context.SaveChangesAsync();
             return request.Serialize();
@@ -94,16 +94,15 @@ namespace WebApplication.Controllers
                 ? null
                 : await _context.Users
                     .Where(applicationUser => applicationUser.UserName.Contains(request.UserName) &&
-                                              applicationUser.UserName != currentUser.UserName
-                    )
+                                              applicationUser.UserName != currentUser.UserName)
                     .ToListAsync();
+
             return new SearchUserResponse
             {
-                UsersByUserName = usersByUserName?.Select(user => user.Serialize())
+                UsersByUserName = usersByUserName?.Select(user => user.Serialize(serializeRequests: false))
             };
         }
 
-        [Authorize]
         [HttpGet("current")]
         public async Task<ActionResult<UserDto>> GetCurrent()
         {
@@ -116,9 +115,8 @@ namespace WebApplication.Controllers
                 .Include(applicationUser => applicationUser.SentRequests)
                 .ThenInclude(friendshipStatus => friendshipStatus.To)
                 .FirstOrDefaultAsync();
-            return user == null
-                ? BadRequest()
-                : user.Serialize();
+            Check.NotNull(user, "User does not exist");
+            return user.Serialize();
         }
     }
 }
