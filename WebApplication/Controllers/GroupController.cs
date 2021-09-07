@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Entities.Dto.GroupDto;
+using Entities.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -15,12 +16,22 @@ using WebApplication.Models;
 
 namespace WebApplication.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class GroupController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ApplicationContext _context;
+
+        private static readonly PropertyEqualityComparer<ApplicationUser, string> UserIdComparer =
+            new(user => user.Id);
+
+        private static readonly PropertyEqualityComparer<UnidirectionalPaymentGroup, Guid> PaymentGroupIdComparer =
+            new(group => group.Id);
+
+        private static readonly PropertyEqualityComparer<SinglePayment, Guid> SinglePaymentIdComparer =
+            new(payment => payment.Id);
 
         public GroupController(UserManager<ApplicationUser> userManager, ApplicationContext context)
         {
@@ -41,7 +52,9 @@ namespace WebApplication.Controllers
                 .ThenInclude(paymentGroup => paymentGroup.GroupPayments)
                 .ThenInclude(unidirectionalPaymentGroup => unidirectionalPaymentGroup.PaymentTargets)
                 .FirstOrDefaultAsync();
+
             Check.NotNull(user, "User not found");
+
             var data = user.PaymentGroups
                 ?.Select(paymentGroup => paymentGroup.Serialize())
                 ?.ToArray();
@@ -71,12 +84,15 @@ namespace WebApplication.Controllers
             [FromBody] SinglePurposeUserGroupDto modifiedGroup)
         {
             Check.Guard(modifiedGroup.Id != Guid.Empty, "No group id provided");
+
             var foundGroup = await _context.UserGroups
                 .Where(group => group.Id == modifiedGroup.Id)
                 .Include(group => group.GroupUsers)
                 .Include(group => group.GroupPayments)
                 .FirstOrDefaultAsync();
+
             var currentUserId = _userManager.GetUserId(User);
+
             Check.NotNull(foundGroup, "Group does not exists");
             Check.Guard(foundGroup.GroupUsers.Any(user => user.Id == currentUserId),
                 "You have to be part of the group to modify it");
@@ -86,52 +102,36 @@ namespace WebApplication.Controllers
                 foundGroup.Name = modifiedGroup.Name;
             }
 
-            var (addedUsers, deletedUsers) = modifiedGroup.GroupUsers == null
-                ? (Enumerable.Empty<ApplicationUser>(), Enumerable.Empty<ApplicationUser>())
-                : foundGroup
-                    .GroupUsers
-                    .CalculateUpdate(modifiedGroup.GroupUsers, user => user.Id,
-                        user => user.Id, user => user.Deserialize(deserializeRequests: false));
-            var (addedGroups, deletedGroups) =
-                modifiedGroup.GroupPayments == null
-                    ? (Enumerable.Empty<UnidirectionalPaymentGroup>(), Enumerable.Empty<UnidirectionalPaymentGroup>())
-                    : foundGroup
-                        .GroupPayments
-                        .CalculateUpdate(modifiedGroup.GroupPayments, group => group.Id, group => group.Id,
-                            SerializerExtensions.Deserialize);
+            var groupUserUpdate = foundGroup.GroupUsers.CalculateUpdate(modifiedGroup.GroupUsers,
+                user => user.Deserialize(deserializeRequests: false), UserIdComparer);
+            var paymentGroupUpdate = foundGroup.GroupPayments.CalculateUpdate(modifiedGroup.GroupPayments,
+                SerializerExtensions.Deserialize, PaymentGroupIdComparer);
 
-            var addedGroupUsers = addedGroups
-                .SelectMany(group => group.PaymentTargets.Select(target => target.Target).Append(group.PaymentBy));
-            var fak = addedUsers.Concat(addedGroupUsers).Select(user => user.Id).ToHashSet(); //TODO: rename
+            var addedGroupUserIds = paymentGroupUpdate.Added
+                .SelectMany(group =>
+                    group.PaymentTargets.Select(target => target.Target.Id).Append(group.PaymentBy.Id));
+            var usedUserIds = groupUserUpdate.Added
+                .Select(user => user.Id)
+                .Concat(addedGroupUserIds)
+                .ToHashSet();
+
             var loadedUsers = await _context.Users
-                .Where(user => fak.Contains(user.Id))
+                .Where(user => usedUserIds.Contains(user.Id))
                 .ToDictionaryAsync(user => user.Id);
-            foreach (var toRemove in deletedUsers)
-            {
-                foundGroup.GroupUsers.Remove(toRemove);
-            }
 
-            foreach (var toAdd in addedUsers)
+            foundGroup.GroupUsers.RemoveAll(groupUserUpdate.Removed);
+            foundGroup.GroupUsers.AddAll(groupUserUpdate.Added, user => loadedUsers[user.Id]);
+            
+            foundGroup.GroupPayments.RemoveAll(paymentGroupUpdate.Removed);
+            foundGroup.GroupPayments.AddAll(paymentGroupUpdate.Added, group =>
             {
-                foundGroup.GroupUsers.Add(loadedUsers[toAdd.Id]);
-            }
-
-
-            foreach (var toRemove in deletedGroups)
-            {
-                foundGroup.GroupPayments.Remove(toRemove);
-            }
-
-            foreach (var toAdd in addedGroups)
-            {
-                toAdd.PaymentBy = loadedUsers[toAdd.PaymentBy.Id];
-                foreach (var paymentTarget in toAdd.PaymentTargets)
+                group.PaymentBy = loadedUsers[group.PaymentBy.Id];
+                foreach (var targetPayment in group.PaymentTargets)
                 {
-                    paymentTarget.Target = loadedUsers[paymentTarget.Target.Id];
+                    targetPayment.Target = loadedUsers[targetPayment.Target.Id];
                 }
-
-                foundGroup.GroupPayments.Add(toAdd);
-            }
+                return group;
+            });
 
             await _context.SaveChangesAsync();
             return foundGroup.Serialize();
@@ -156,28 +156,22 @@ namespace WebApplication.Controllers
             Check.NotNull(foundPaymentGroup, "Payment group not found");
 
             var currentUserId = _userManager.GetUserId(User);
+
             Check.Guard(foundPaymentGroup.UserGroup.GroupUsers.Any(user => user.Id == currentUserId),
                 "You are not a member of a group");
 
+            var paymentUpdate = foundPaymentGroup.PaymentTargets.CalculateUpdate(modifiedPaymentGroup.PaymentTargets,
+                SerializerExtensions.Deserialize, SinglePaymentIdComparer);
 
-            _context.Entry(foundPaymentGroup).OriginalValues
-                .SetValues(modifiedPaymentGroup); //TODO: zistit, co to robi vlastne
-            var (addedPayments, removedPayments) =
-                modifiedPaymentGroup.PaymentTargets == null
-                    ? (Enumerable.Empty<SinglePayment>(), Enumerable.Empty<SinglePayment>())
-                    : foundPaymentGroup
-                        .PaymentTargets
-                        .CalculateUpdate(modifiedPaymentGroup.PaymentTargets, payment => payment.Id,
-                            payment => payment.Id,
-                            SerializerExtensions.Deserialize);
-            var addedUserIds = addedPayments
+            var addedUserIds = paymentUpdate.Added
                 .Select(payment => payment.Target.Id)
                 .Append(modifiedPaymentGroup.PaymentBy?.Id)
-                .Where(value => value != null)
+                .Where(userId => userId != null)
                 .ToHashSet();
             var loadedUsers = await _context.Users
                 .Where(user => addedUserIds.Contains(user.Id))
                 .ToDictionaryAsync(user => user.Id);
+
             if (modifiedPaymentGroup.Name != null)
             {
                 foundPaymentGroup.Name = modifiedPaymentGroup.Name;
@@ -188,19 +182,12 @@ namespace WebApplication.Controllers
                 foundPaymentGroup.PaymentBy = loadedUsers[modifiedPaymentGroup.PaymentBy.Id];
             }
 
-            if (modifiedPaymentGroup.PaymentTargets != null)
+            foundPaymentGroup.PaymentTargets.RemoveAll(paymentUpdate.Removed);
+            foundPaymentGroup.PaymentTargets.AddAll(paymentUpdate.Added, payment =>
             {
-                foreach (var deletedPayment in removedPayments)
-                {
-                    foundPaymentGroup.PaymentTargets.Remove(deletedPayment);
-                }
-
-                foreach (var addedPayment in addedPayments)
-                {
-                    addedPayment.Target = loadedUsers[addedPayment.Target.Id];
-                    foundPaymentGroup.PaymentTargets.Add(addedPayment);
-                }
-            }
+                payment.Target = loadedUsers[payment.Target.Id];
+                return payment;
+            });
 
             await _context.SaveChangesAsync();
             return foundPaymentGroup.Serialize();
@@ -238,7 +225,7 @@ namespace WebApplication.Controllers
         [HttpGet("getGroupSettlement/{groupId:guid}")]
         public async Task<ActionResult<IEnumerable<PaymentRecordDto>>> GetGroupBalance(Guid groupId)
         {
-            var currentUser = await _context.Users.FirstOrDefaultAsync(user => user.Id == _userManager.GetUserId(User));
+            var currentUserId  = _userManager.GetUserId(User);
             var group = await _context.UserGroups
                 .Where(group => group.Id == groupId)
                 .AsSplitQuery()
@@ -249,8 +236,9 @@ namespace WebApplication.Controllers
                 .ThenInclude(group => group.PaymentTargets)
                 .ThenInclude(target => target.Target)
                 .FirstOrDefaultAsync();
-            Check.Guard(group.GroupUsers.Contains(currentUser),
+            Check.Guard(group.GroupUsers.Any(user => user.Id == currentUserId),
                 "You have to be part of the group to get the group settlement");
+
             var groupSettlement = GroupSolver.FindGroupSettlement(group);
             return groupSettlement
                 .Select(record => new PaymentRecordDto

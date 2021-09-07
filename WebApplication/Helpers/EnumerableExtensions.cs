@@ -6,57 +6,44 @@ namespace WebApplication.Helpers
 {
     public static class EnumerableExtensions
     {
-        private static IEnumerable<TMapped> GetAddedItemsByUniqProperty<TSource, TMapped, TProperty>(
-            this IEnumerable<TSource> source,
-            IEnumerable<TMapped> modified,
-            Func<TSource, TProperty> sourceGetter,
-            Func<TMapped, TProperty> changedGetter
-        )
+        public static void RemoveAll<TSource>(this ICollection<TSource> source, IEnumerable<TSource> removed)
         {
-            if (modified == null || source == null || changedGetter == null || sourceGetter == null)
-                throw new ArgumentNullException();
-
-            var originPropertySet = source.Select(sourceGetter).ToHashSet();
-            foreach (var changedItem in modified)
+            foreach (var item in removed)
             {
-                if (!originPropertySet.Contains(changedGetter(changedItem)))
-                    yield return changedItem;
+                source.Remove(item);
             }
         }
 
-        private static IEnumerable<TSource> GetRemovedItemsByUniqProperty<TSource, TMapped, TProperty>(
-            this IEnumerable<TSource> source,
-            IEnumerable<TMapped> modified,
-            Func<TSource, TProperty> originGetter,
-            Func<TMapped, TProperty> changedGetter
-        )
+        public static void AddAll<TSource>(this ICollection<TSource> source, IEnumerable<TSource> added,
+            Func<TSource, TSource> mapFunction = null)
         {
-            if (modified == null || source == null || changedGetter == null || originGetter == null)
-                throw new ArgumentNullException();
-
-            var changedPropertySet = modified.Select(changedGetter).ToHashSet();
-            foreach (var originItem in source)
+            var map = mapFunction ?? (item => item);
+            foreach (var item in added)
             {
-                if (!changedPropertySet.Contains(originGetter(originItem)))
-                    yield return originItem;
+                source.Add(map(item));
             }
         }
 
-        public static (ICollection<TSource> added, ICollection<TSource> removed) CalculateUpdate<
-            TSource, TMapped, TProperty>(
-            this IEnumerable<TSource> source,
+        public static UpdateResult<TSource> CalculateUpdate<TSource, TMapped>(
+            this ICollection<TSource> source,
             IEnumerable<TMapped> modified,
-            Func<TSource, TProperty> originGetter,
-            Func<TMapped, TProperty> changedGetter,
-            Func<TMapped, TSource> map)
+            Func<TMapped, TSource> map,
+            IEqualityComparer<TSource> equalityComparer)
         {
-            var toAdd = source
-                .GetAddedItemsByUniqProperty(modified, originGetter, changedGetter)
-                .Select(map);
-            var toRemove = source
-                .GetRemovedItemsByUniqProperty(modified, originGetter, changedGetter);
-            return (toAdd.ToList(), toRemove.ToList());
+            if (source == null || modified == null)
+                return UpdateResult<TSource>.Empty;
+
+            var modifiedMapped = modified.Select(map).ToList();
+            var added = modifiedMapped.Except(source, equalityComparer);
+            var removed = source.Except(modifiedMapped, equalityComparer);
+            return new UpdateResult<TSource> { Added = added, Removed = removed };
         }
-        
+
+        public record UpdateResult<TSource>
+        {
+            public static readonly UpdateResult<TSource> Empty = new();
+            public IEnumerable<TSource> Added { get; init; } = Enumerable.Empty<TSource>();
+            public IEnumerable<TSource> Removed { get; init; } = Enumerable.Empty<TSource>();
+        }
     }
 }
