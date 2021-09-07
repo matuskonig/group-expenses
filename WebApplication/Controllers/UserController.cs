@@ -34,15 +34,15 @@ namespace WebApplication.Controllers
         {
             var user = await _userManager.GetUserAsync(User);
             var otherUser = await _context.Users.FindAsync(id);
-            var possibleExistingRelation = await _context.FriendRequests
-                .FirstOrDefaultAsync(request =>
-                    request.From == user && request.To == otherUser &&
-                    request.State != FriendRequestState.Rejected);
+            var possibleExistingFriendshipStatus = await _context.FriendRequests
+                .FirstOrDefaultAsync(friendshipStatus =>
+                    friendshipStatus.From == user && friendshipStatus.To == otherUser &&
+                    friendshipStatus.State != FriendRequestState.Rejected);
             Check.NotNull(otherUser, $"Other user does not exist");
-            Check.Null(possibleExistingRelation, "Request to this user has already been sent");
+            Check.Null(possibleExistingFriendshipStatus, "Request to this user has already been sent");
             Check.Guard(user.Id != otherUser.Id, "You cant send request to yourself");
 
-            var relation = new FriendshipStatus
+            var status = new FriendshipStatus
             {
                 From = user,
                 To = otherUser,
@@ -50,28 +50,28 @@ namespace WebApplication.Controllers
                 Created = DateTime.Now,
                 Modified = DateTime.Now
             };
-            _context.FriendRequests.Add(relation);
+            _context.FriendRequests.Add(status);
             await _context.SaveChangesAsync();
-            return relation.Serialize();
+            return status.Serialize();
         }
 
         [HttpGet("acceptRequest/{id:guid}")]
         public async Task<ActionResult<FriendRequestDto>> AcceptFriendRequest(Guid id)
         {
-            var friendRequest = await _context.FriendRequests
+            var friendStatus = await _context.FriendRequests
                 .Where(status => status.Id == id)
                 .Include(status => status.From)
                 .Include(status => status.To)
                 .FirstOrDefaultAsync();
-            var currentUser = await _userManager.GetUserAsync(User);
-            Check.NotNull(friendRequest, "Friend request does not exist");
-            Check.Guard(friendRequest.To == currentUser, "Friend request was sent to other than current user");
+            var currentUserId = _userManager.GetUserId(User);
+            Check.NotNull(friendStatus, "Friend request does not exist");
+            Check.Guard(friendStatus.To.Id == currentUserId, "Friend request was sent to other than current user");
 
-            friendRequest.State = FriendRequestState.Accepted;
-            friendRequest.Modified = DateTime.Now;
+            friendStatus.State = FriendRequestState.Accepted;
+            friendStatus.Modified = DateTime.Now;
 
             await _context.SaveChangesAsync();
-            return friendRequest.Serialize();
+            return friendStatus.Serialize();
         }
 
         [HttpGet("rejectRequest/{id:guid}")]
@@ -82,6 +82,7 @@ namespace WebApplication.Controllers
             Check.Guard(request.State != FriendRequestState.Rejected, "Friend request has already been rejected");
 
             request.State = FriendRequestState.Rejected;
+            
             await _context.SaveChangesAsync();
             return request.Serialize();
         }
@@ -106,10 +107,10 @@ namespace WebApplication.Controllers
         [HttpGet("current")]
         public async Task<ActionResult<UserDto>> GetCurrent()
         {
-            var userId = _userManager.GetUserId(User);
+            var currentUserId = _userManager.GetUserId(User);
             var user = await _context.Users
                 .AsSplitQuery()
-                .Where(u => u.Id == userId)
+                .Where(user => user.Id == currentUserId)
                 .Include(applicationUser => applicationUser.IncomingRequests)
                 .ThenInclude(friendshipStatus => friendshipStatus.From)
                 .Include(applicationUser => applicationUser.SentRequests)
