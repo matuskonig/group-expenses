@@ -4,12 +4,12 @@ using WebApplication.Authentication;
 
 namespace WebApplication.Models
 {
-    public sealed class SinglePayment
+    public class SinglePayment
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid Id { get; set; }
         public decimal Price { get; set; }
         public ApplicationUser Target { get; set; }
-        public UnidirectionalPaymentGroup PaymentGroup { get; set; }
+        public virtual UnidirectionalPaymentGroup PaymentGroup { get; set; }
     }
 }

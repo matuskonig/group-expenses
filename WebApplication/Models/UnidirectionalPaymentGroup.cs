@@ -12,6 +12,6 @@ namespace WebApplication.Models
         public string Name { get; set; }
         public ApplicationUser PaymentBy { get; set; }
         public virtual ICollection<SinglePayment> PaymentTargets { get; set; }
-        public SinglePurposeUserGroup UserGroup { get; set; }
+        public virtual SinglePurposeUserGroup UserGroup { get; set; }
     }
 }
