@@ -7,6 +7,7 @@
 @using Frontend.Components.UI
 @using Frontend.Constants
 @using Entities.Dto.AuthDto
+@using Entities.Helpers
 @inject GroupService _groupService
 
 <h4>Users</h4>
@@ -30,7 +31,7 @@
 </ul>
 
 @code {
-    private PropertyEqualityComparer<UserDto, string> _userByIdComparer = new(user => user.Id);
+    private static PropertyEqualityComparer<UserDto, string> userByIdComparer = new(user => user.Id);
 
     [Parameter]
     public SinglePurposeUserGroupDto Group { get; set; }
@@ -55,7 +56,7 @@
         return CurrentUserProvider
             ?.CurrentUser
             ?.Friends()
-            ?.Except(Group.GroupUsers, _userByIdComparer)
+            ?.Except(Group.GroupUsers, userByIdComparer)
             .OrderBy(user => user.UserName) ?? Enumerable.Empty<UserDto>();
     }
 
