@@ -61,7 +61,7 @@
     [CascadingParameter]
     public AuthStateProvider AuthStateProvider { get; set; }
 
-    private IEnumerable<FriendRequestDto> GetIncomingRequests() =>
+    private IEnumerable<FriendshipStatusDto> GetIncomingRequests() =>
         UserProvider?.CurrentUser?.IncomingRequests
             ?.Where(request => request.State == FriendRequestState.WaitingForAccept);
 
@@ -73,15 +73,15 @@
         await _userApiService.LoadCurrent();
     }
 
-    private async Task AcceptRequest(FriendRequestDto friendRequest)
+    private async Task AcceptRequest(FriendshipStatusDto friendshipStatus)
     {
-        await _userApiService.AcceptFriendRequest(friendRequest);
+        await _userApiService.AcceptFriendRequest(friendshipStatus);
         await _userApiService.LoadCurrent();
     }
 
-    private async Task RejectRequest(FriendRequestDto friendRequestDto)
+    private async Task RejectRequest(FriendshipStatusDto friendshipStatus)
     {
-        await _userApiService.RejectFriendRequest(friendRequestDto);
+        await _userApiService.RejectFriendRequest(friendshipStatus);
         await _userApiService.LoadCurrent();
     }
 

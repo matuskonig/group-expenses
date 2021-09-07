@@ -49,9 +49,9 @@ namespace WebApplication.Helpers
             };
         }
 
-        public static FriendRequestDto Serialize(this FriendshipStatus friendshipStatus)
+        public static FriendshipStatusDto Serialize(this FriendshipStatus friendshipStatus)
         {
-            return new FriendRequestDto
+            return new FriendshipStatusDto
             {
                 Id = friendshipStatus.Id,
                 Created = friendshipStatus.Created,
@@ -62,7 +62,7 @@ namespace WebApplication.Helpers
             };
         }
 
-        public static FriendshipStatus Deserialize(this FriendRequestDto friendshipStatus)
+        public static FriendshipStatus Deserialize(this FriendshipStatusDto friendshipStatus)
         {
             return new FriendshipStatus
             {

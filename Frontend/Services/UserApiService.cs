@@ -56,7 +56,7 @@ namespace Frontend.Services
                 await _alertMessageService.ShowNetworkError(response);
         }
 
-        public async Task AcceptFriendRequest(FriendRequestDto request)
+        public async Task AcceptFriendRequest(FriendshipStatusDto request)
         {
             var response = await _httpClient.GetAsync($"user/acceptRequest/{request.Id}");
             if (!response.IsSuccessStatusCode)
@@ -65,13 +65,13 @@ namespace Frontend.Services
                 return;
             }
 
-            var friendRequest = await response.Content.ReadFromJsonAsync<FriendRequestDto>();
-            UpdateIncomingFriendRequest(friendRequest);
-            UpdateSendFriendRequest(friendRequest);
+            var friendshipStatus = await response.Content.ReadFromJsonAsync<FriendshipStatusDto>();
+            UpdateIncomingFriendRequest(friendshipStatus);
+            UpdateSendFriendRequest(friendshipStatus);
             OnChange?.Invoke();
         }
 
-        public async Task RejectFriendRequest(FriendRequestDto request)
+        public async Task RejectFriendRequest(FriendshipStatusDto request)
         {
             var response = await _httpClient.GetAsync($"user/rejectRequest/{request.Id}");
             if (!response.IsSuccessStatusCode)
@@ -80,27 +80,27 @@ namespace Frontend.Services
                 return;
             }
 
-            var friendRequest = await response.Content.ReadFromJsonAsync<FriendRequestDto>();
-            UpdateIncomingFriendRequest(friendRequest);
-            UpdateSendFriendRequest(friendRequest);
+            var friendshipStatus = await response.Content.ReadFromJsonAsync<FriendshipStatusDto>();
+            UpdateIncomingFriendRequest(friendshipStatus);
+            UpdateSendFriendRequest(friendshipStatus);
             OnChange?.Invoke();
         }
 
-        private void UpdateIncomingFriendRequest(FriendRequestDto updatedFriendRequest)
+        private void UpdateIncomingFriendRequest(FriendshipStatusDto updatedFriendshipStatus)
         {
             CurrentUser.IncomingRequests = CurrentUser.IncomingRequests
                 .Select(incomingRequest =>
-                    incomingRequest.Id == updatedFriendRequest?.Id
-                        ? updatedFriendRequest
+                    incomingRequest.Id == updatedFriendshipStatus?.Id
+                        ? updatedFriendshipStatus
                         : incomingRequest)
                 .ToArray();
         }
 
-        private void UpdateSendFriendRequest(FriendRequestDto updatedFriendRequest)
+        private void UpdateSendFriendRequest(FriendshipStatusDto updatedFriendshipStatus)
         {
             CurrentUser.SentRequests = CurrentUser.SentRequests
-                .Select(sentRequest => sentRequest.Id == updatedFriendRequest?.Id
-                    ? updatedFriendRequest
+                .Select(sentRequest => sentRequest.Id == updatedFriendshipStatus?.Id
+                    ? updatedFriendshipStatus
                     : sentRequest)
                 .ToArray();
         }

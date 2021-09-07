@@ -34,7 +34,7 @@ namespace WebApplication.Controllers
         /// <param name="id">user id of the other user, the request target</param>
         /// <returns>newly created FriendshipStatus</returns>
         [HttpGet("sendNewRequest/{id}")]
-        public async Task<ActionResult<FriendRequestDto>> SendNewFriendRequest(string id)
+        public async Task<ActionResult<FriendshipStatusDto>> SendNewFriendRequest(string id)
         {
             var user = await _userManager.GetUserAsync(User);
             var otherUser = await _context.Users.FindAsync(id);
@@ -66,7 +66,7 @@ namespace WebApplication.Controllers
         /// <param name="id">FriendshipStatus id</param>
         /// <returns>Updated FriendshipStatus</returns>
         [HttpGet("acceptRequest/{id:guid}")]
-        public async Task<ActionResult<FriendRequestDto>> AcceptFriendRequest(Guid id)
+        public async Task<ActionResult<FriendshipStatusDto>> AcceptFriendRequest(Guid id)
         {
             var friendStatus = await _context.FriendRequests
                 .Where(status => status.Id == id)
@@ -90,7 +90,7 @@ namespace WebApplication.Controllers
         /// <param name="id">Request id</param>
         /// <returns>FriendshipStatus after changes are made</returns>
         [HttpGet("rejectRequest/{id:guid}")]
-        public async Task<ActionResult<FriendRequestDto>> RejectFriendRequest(Guid id)
+        public async Task<ActionResult<FriendshipStatusDto>> RejectFriendRequest(Guid id)
         {
             var request = await _context.FriendRequests.FindAsync(id);
             Check.NotNull(request, "Friend request not found");

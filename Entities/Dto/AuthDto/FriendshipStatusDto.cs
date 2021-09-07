@@ -3,7 +3,7 @@ using Entities.Enums;
 
 namespace Entities.Dto.AuthDto
 {
-    public class FriendRequestDto
+    public class FriendshipStatusDto
     {
         public Guid Id { get; set; }
         public UserDto From { get; set; }
