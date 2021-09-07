@@ -74,10 +74,12 @@ namespace WebApplication.Controllers
                 SecurityStamp = Guid.NewGuid().ToString(),
                 UserName = model.Username
             };
+            
             var result = await _userManager.CreateAsync(user, model.Password);
 
             await EnsureRolesExists();
             await _userManager.AddToRoleAsync(user, UserRoles.User);
+            
             Check.Guard(result.Succeeded, "Creating the user was unsuccessful");
             return user.Serialize(serializeRequests: false);
         }
