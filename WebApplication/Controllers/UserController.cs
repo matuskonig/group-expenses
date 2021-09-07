@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using WebApplication.Authentication;
 using WebApplication.Checks;
 using WebApplication.Helpers;
 using WebApplication.Models;
@@ -29,6 +28,11 @@ namespace WebApplication.Controllers
             _context = context;
         }
 
+        /// <summary>
+        /// Creates a new friend request (FriendshipStatus) between currentUser and user by id
+        /// </summary>
+        /// <param name="id">user id of the other user, the request target</param>
+        /// <returns>newly created FriendshipStatus</returns>
         [HttpGet("sendNewRequest/{id}")]
         public async Task<ActionResult<FriendRequestDto>> SendNewFriendRequest(string id)
         {
@@ -51,10 +55,16 @@ namespace WebApplication.Controllers
                 Modified = DateTime.Now
             };
             _context.FriendRequests.Add(status);
+
             await _context.SaveChangesAsync();
             return status.Serialize();
         }
 
+        /// <summary>
+        /// Accepts the friend request by setting FriendshipStatus state
+        /// </summary>
+        /// <param name="id">FriendshipStatus id</param>
+        /// <returns>Updated FriendshipStatus</returns>
         [HttpGet("acceptRequest/{id:guid}")]
         public async Task<ActionResult<FriendRequestDto>> AcceptFriendRequest(Guid id)
         {
@@ -74,6 +84,11 @@ namespace WebApplication.Controllers
             return friendStatus.Serialize();
         }
 
+        /// <summary>
+        /// Rejects the friend request by setting state of FriendshipStatus
+        /// </summary>
+        /// <param name="id">Request id</param>
+        /// <returns>FriendshipStatus after changes are made</returns>
         [HttpGet("rejectRequest/{id:guid}")]
         public async Task<ActionResult<FriendRequestDto>> RejectFriendRequest(Guid id)
         {
@@ -82,11 +97,16 @@ namespace WebApplication.Controllers
             Check.Guard(request.State != FriendRequestState.Rejected, "Friend request has already been rejected");
 
             request.State = FriendRequestState.Rejected;
-            
+
             await _context.SaveChangesAsync();
             return request.Serialize();
         }
 
+        /// <summary>
+        /// Performs a search query by parameters given
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns>List of users satisfying individual searches</returns>
         [HttpPost("searchUser")]
         public async Task<ActionResult<SearchUserResponse>> SearchFriendByName([FromBody] SearchUserRequest request)
         {
@@ -100,10 +120,14 @@ namespace WebApplication.Controllers
 
             return new SearchUserResponse
             {
-                UsersByUserName = usersByUserName?.Select(user => user.Serialize(serializeRequests: false))
+                UsersByUserName = usersByUserName?.Select(user => user.Serialize())
             };
         }
 
+        /// <summary>
+        /// Returns the current user with all data loaded
+        /// </summary>
+        /// <returns>Serialized current user with all data loaded</returns>
         [HttpGet("current")]
         public async Task<ActionResult<UserDto>> GetCurrent()
         {
@@ -116,8 +140,9 @@ namespace WebApplication.Controllers
                 .Include(applicationUser => applicationUser.SentRequests)
                 .ThenInclude(friendshipStatus => friendshipStatus.To)
                 .FirstOrDefaultAsync();
+
             Check.NotNull(user, "User does not exist");
-            return user.Serialize();
+            return user.Serialize(serializeRequests: true);
         }
     }
 }

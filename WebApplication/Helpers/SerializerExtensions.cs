@@ -1,32 +1,51 @@
 ﻿using System.Linq;
 using Entities.Dto.AuthDto;
 using Entities.Dto.GroupDto;
-using WebApplication.Authentication;
 using WebApplication.Models;
 
 namespace WebApplication.Helpers
 {
+    /// <summary>
+    /// Basic serialization and deserialization methods for all DTOs used.
+    /// </summary>
     public static class SerializerExtensions
     {
-        public static UserDto Serialize(this ApplicationUser user, bool serializeRequests = true)
+        /// <summary>
+        /// Serialization of ApplicationUser model into Dto
+        /// </summary>
+        /// <param name="user">ApplicationUser to deserialize</param>
+        /// <param name="serializeRequests">Parameter used to prevent circular serialization, friendship requests are not serializing users request</param>
+        /// <returns></returns>
+        public static UserDto Serialize(this ApplicationUser user, bool serializeRequests = false)
         {
             return new UserDto
             {
                 Id = user.Id,
                 UserName = user.UserName,
-                IncomingRequests = serializeRequests ? user.IncomingRequests?.Select(Serialize) : null,
-                SentRequests = serializeRequests ? user.SentRequests?.Select(Serialize) : null,
+                IncomingRequests =
+                    serializeRequests ? user.IncomingRequests?.Select(status => status.Serialize()) : null,
+                SentRequests = serializeRequests ? user.SentRequests?.Select(status => status.Serialize()) : null,
             };
         }
 
+        /// <summary>
+        /// Deserialization of UserDto into ApplicationUser
+        /// </summary>
+        /// <param name="user">Dto to deserialize</param>
+        /// <param name="deserializeRequests">Parameter used to prevent circular deserialization, friendship requests are not serializing users request</param>
+        /// <returns>ApplicationUser instance</returns>
         public static ApplicationUser Deserialize(this UserDto user, bool deserializeRequests = true)
         {
             return new ApplicationUser
             {
                 Id = user.Id,
                 UserName = user.UserName,
-                IncomingRequests = deserializeRequests ? user.IncomingRequests?.Select(Deserialize).ToList() : null,
-                SentRequests = deserializeRequests ? user.SentRequests?.Select(Deserialize).ToList() : null,
+                IncomingRequests = deserializeRequests
+                    ? user.IncomingRequests?.Select(request => request.Deserialize()).ToList()
+                    : null,
+                SentRequests = deserializeRequests
+                    ? user.SentRequests?.Select(request => request.Deserialize()).ToList()
+                    : null,
             };
         }
 
@@ -38,8 +57,8 @@ namespace WebApplication.Helpers
                 Created = friendshipStatus.Created,
                 Modified = friendshipStatus.Modified,
                 State = friendshipStatus.State,
-                From = friendshipStatus.From?.Serialize(serializeRequests: false),
-                To = friendshipStatus.To?.Serialize(serializeRequests: false)
+                From = friendshipStatus.From?.Serialize(),
+                To = friendshipStatus.To?.Serialize()
             };
         }
 
@@ -51,8 +70,8 @@ namespace WebApplication.Helpers
                 Created = friendshipStatus.Created,
                 Modified = friendshipStatus.Modified,
                 State = friendshipStatus.State,
-                From = friendshipStatus.From?.Deserialize(deserializeRequests: false),
-                To = friendshipStatus.To?.Deserialize(deserializeRequests: false)
+                From = friendshipStatus.From?.Deserialize(),
+                To = friendshipStatus.To?.Deserialize()
             };
         }
 
@@ -62,8 +81,8 @@ namespace WebApplication.Helpers
             {
                 Id = group.Id,
                 Name = group.Name,
-                GroupUsers = group.GroupUsers?.Select(user => user.Serialize(serializeRequests: false)),
-                GroupPayments = group.GroupPayments?.Select(Serialize)
+                GroupUsers = group.GroupUsers?.Select(user => user.Serialize()),
+                GroupPayments = group.GroupPayments?.Select(paymentGroup => paymentGroup.Serialize())
             };
         }
 
@@ -74,7 +93,7 @@ namespace WebApplication.Helpers
                 Id = group.Id,
                 Name = group.Name,
                 GroupUsers = group.GroupUsers?.Select(user => user.Deserialize()).ToList(),
-                GroupPayments = group.GroupPayments?.Select(Deserialize).ToList()
+                GroupPayments = group.GroupPayments?.Select(paymentGroup => paymentGroup.Deserialize()).ToList()
             };
         }
 
@@ -85,7 +104,7 @@ namespace WebApplication.Helpers
                 Id = paymentGroup.Id,
                 Name = paymentGroup.Name,
                 PaymentBy = paymentGroup.PaymentBy.Serialize(),
-                PaymentTargets = paymentGroup.PaymentTargets?.Select(Serialize)
+                PaymentTargets = paymentGroup.PaymentTargets?.Select(paymentTarget => paymentTarget.Serialize())
             };
         }
 
@@ -96,7 +115,8 @@ namespace WebApplication.Helpers
                 Id = paymentGroup.Id,
                 Name = paymentGroup.Name,
                 PaymentBy = paymentGroup.PaymentBy.Deserialize(),
-                PaymentTargets = paymentGroup.PaymentTargets?.Select(Deserialize).ToList()
+                PaymentTargets = paymentGroup.PaymentTargets?.Select(paymentTarget => paymentTarget.Deserialize())
+                    .ToList()
             };
         }
 
@@ -106,7 +126,7 @@ namespace WebApplication.Helpers
             {
                 Id = payment.Id,
                 Price = payment.Price,
-                Target = payment.Target.Serialize(serializeRequests: false)
+                Target = payment.Target.Serialize()
             };
         }
 
@@ -116,7 +136,7 @@ namespace WebApplication.Helpers
             {
                 Id = paymentDto.Id,
                 Price = paymentDto.Price,
-                Target = paymentDto.Target.Deserialize(deserializeRequests: false)
+                Target = paymentDto.Target.Deserialize()
             };
         }
     }

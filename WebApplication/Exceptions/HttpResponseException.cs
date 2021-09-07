@@ -3,21 +3,16 @@ using System.Net;
 
 namespace WebApplication.Exceptions
 {
+    /// <summary>
+    /// Exception with status code, status code is extracted in Exception middleware and used as a status response
+    /// </summary>
     public class HttpResponseException : Exception
     {
-        public HttpResponseException()
-        {
-        }
-
-        public HttpResponseException(string message) : base(message)
-        {
-        }
-
         public HttpResponseException(string message, HttpStatusCode statusCode) : base(message)
         {
             StatusCode = statusCode;
         }
 
-        public HttpStatusCode StatusCode { get; init; } = HttpStatusCode.InternalServerError;
+        public HttpStatusCode StatusCode { get; }
     }
 }

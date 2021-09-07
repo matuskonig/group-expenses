@@ -9,7 +9,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using WebApplication.Authentication;
 using WebApplication.Middlewares;
 using WebApplication.Models;
 
@@ -68,7 +67,6 @@ namespace WebApplication
             {
                 app.UseCors(options =>
                 {
-                    // TODO: Fix cors
                     options.AllowAnyOrigin();
                     options.AllowAnyHeader();
                     options.AllowAnyMethod();
@@ -82,7 +80,7 @@ namespace WebApplication
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
+            app.UseEndpoints(endpoints => endpoints.MapControllers());
         }
     }
 }

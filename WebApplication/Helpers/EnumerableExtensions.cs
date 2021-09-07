@@ -6,6 +6,9 @@ namespace WebApplication.Helpers
 {
     public static class EnumerableExtensions
     {
+        /// <summary>
+        /// Removes all items from the collection
+        /// </summary>
         public static void RemoveAll<TSource>(this ICollection<TSource> source, IEnumerable<TSource> removed)
         {
             foreach (var item in removed)
@@ -14,36 +17,39 @@ namespace WebApplication.Helpers
             }
         }
 
-        public static void AddAll<TSource>(this ICollection<TSource> source, IEnumerable<TSource> added,
-            Func<TSource, TSource> mapFunction = null)
+        /// <summary>
+        /// Adds the items into the collection using the mapping function
+        /// </summary>
+        public static void AddAll<TSource, TOther>(this ICollection<TSource> source, IEnumerable<TOther> added,
+            Func<TOther, TSource> mapFunction)
         {
-            var map = mapFunction ?? (item => item);
             foreach (var item in added)
             {
-                source.Add(map(item));
+                source.Add(mapFunction(item));
             }
         }
 
+        /// <summary>
+        /// Calculate the difference in terms of added and removed entities from the collection
+        /// </summary>
+        /// <param name="source">data source, original collection from which changes are calculated</param>
+        /// <param name="modified">modified source by adding or removing entities</param>
+        /// <param name="map">function to map modified entity to original entity</param>
+        /// <param name="equalityComparer">Custom equality comparer, e.g. comparer by entity id</param>
+        /// <returns>Difference</returns>
         public static UpdateResult<TSource> CalculateUpdate<TSource, TMapped>(
             this ICollection<TSource> source,
             IEnumerable<TMapped> modified,
             Func<TMapped, TSource> map,
-            IEqualityComparer<TSource> equalityComparer)
+            IEqualityComparer<TSource> equalityComparer = null)
         {
             if (source == null || modified == null)
                 return UpdateResult<TSource>.Empty;
 
-            var modifiedMapped = modified.Select(map).ToList();
-            var added = modifiedMapped.Except(source, equalityComparer);
-            var removed = source.Except(modifiedMapped, equalityComparer);
+            var modifiedMappedToSourceType = modified.Select(map).ToList();
+            var added = modifiedMappedToSourceType.Except(source, equalityComparer);
+            var removed = source.Except(modifiedMappedToSourceType, equalityComparer);
             return new UpdateResult<TSource> { Added = added, Removed = removed };
-        }
-
-        public record UpdateResult<TSource>
-        {
-            public static readonly UpdateResult<TSource> Empty = new();
-            public IEnumerable<TSource> Added { get; init; } = Enumerable.Empty<TSource>();
-            public IEnumerable<TSource> Removed { get; init; } = Enumerable.Empty<TSource>();
         }
     }
 }

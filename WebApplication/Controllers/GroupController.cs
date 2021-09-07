@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApplication.Algorithms.Group;
-using WebApplication.Authentication;
 using WebApplication.Checks;
 using WebApplication.Helpers;
 using WebApplication.Models;
@@ -39,6 +38,9 @@ namespace WebApplication.Controllers
             _context = context;
         }
 
+        /// <summary>
+        /// Returns the groups (and the group data), which is current user member of 
+        /// </summary>
         [HttpGet("currentUserGroup")]
         public async Task<ActionResult<IEnumerable<SinglePurposeUserGroupDto>>> GetCurrentUserGroups()
         {
@@ -61,6 +63,11 @@ namespace WebApplication.Controllers
             return data;
         }
 
+        /// <summary>
+        /// Creates a new group and sets the user as the only user of the group
+        /// </summary>
+        /// <param name="groupDto"></param>
+        /// <returns></returns>
         [HttpPost("addNewGroup")]
         public async Task<ActionResult<SinglePurposeUserGroupDto>> AddNewDefaultGroup(
             [FromBody] SinglePurposeUserGroupDto groupDto)
@@ -78,7 +85,14 @@ namespace WebApplication.Controllers
             return group.Serialize();
         }
 
-
+        /// <summary>
+        /// Modifies the group. If some value is null, no change is made.
+        /// Changes to scalar types are done precisely, changes on the reference types are done on the level of added and
+        /// removed entities (added entity is created and vice versa). Also everywhere where ApplicationUser is requested
+        /// the user must exists.
+        /// </summary>
+        /// <param name="modifiedGroup"></param>
+        /// <returns>Modified group</returns>
         [HttpPatch("modifyUserGroup")]
         public async Task<ActionResult<SinglePurposeUserGroupDto>> ModifyUserGroup(
             [FromBody] SinglePurposeUserGroupDto modifiedGroup)
@@ -121,7 +135,7 @@ namespace WebApplication.Controllers
 
             foundGroup.GroupUsers.RemoveAll(groupUserUpdate.Removed);
             foundGroup.GroupUsers.AddAll(groupUserUpdate.Added, user => loadedUsers[user.Id]);
-            
+
             foundGroup.GroupPayments.RemoveAll(paymentGroupUpdate.Removed);
             foundGroup.GroupPayments.AddAll(paymentGroupUpdate.Added, group =>
             {
@@ -130,6 +144,7 @@ namespace WebApplication.Controllers
                 {
                     targetPayment.Target = loadedUsers[targetPayment.Target.Id];
                 }
+
                 return group;
             });
 
@@ -137,6 +152,12 @@ namespace WebApplication.Controllers
             return foundGroup.Serialize();
         }
 
+        /// <summary>
+        /// Modify the payment group, by updating all not null provided values. If updated property is scalar, property is updated as is
+        /// If the property is collection, only changes in the terms of added/removed entity is performed
+        /// </summary>
+        /// <param name="modifiedPaymentGroup">body request</param>
+        /// <returns>Updated payment group</returns>
         [HttpPatch("modifyPaymentGroup")]
         public async Task<ActionResult<UnidirectionalPaymentGroupDto>> ModifyPaymentGroup(
             [FromBody] UnidirectionalPaymentGroupDto modifiedPaymentGroup)
@@ -193,6 +214,12 @@ namespace WebApplication.Controllers
             return foundPaymentGroup.Serialize();
         }
 
+        /// <summary>
+        /// Modifies single payment. Changes the data based on properties given in body. If the value is null,
+        /// no change is made
+        /// </summary>
+        /// <param name="paymentDto">body request</param>
+        /// <returns>Updated single payment</returns>
         [HttpPatch("modifySinglePayment")]
         public async Task<ActionResult<SinglePaymentDto>> ModifySinglePayment([FromBody] SinglePaymentDto paymentDto)
         {
@@ -221,11 +248,16 @@ namespace WebApplication.Controllers
             await _context.SaveChangesAsync();
             return paymentDto;
         }
-
+        
+        /// <summary>
+        /// Calculates group settlement, the list of transactions, which if performed, the group will be even
+        /// </summary>
+        /// <param name="groupId">group id</param>
+        /// <returns>Group settlement as list of transactions</returns>
         [HttpGet("getGroupSettlement/{groupId:guid}")]
         public async Task<ActionResult<IEnumerable<PaymentRecordDto>>> GetGroupBalance(Guid groupId)
         {
-            var currentUserId  = _userManager.GetUserId(User);
+            var currentUserId = _userManager.GetUserId(User);
             var group = await _context.UserGroups
                 .Where(group => group.Id == groupId)
                 .AsSplitQuery()

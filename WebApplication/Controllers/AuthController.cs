@@ -9,10 +9,10 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using WebApplication.Authentication;
 using WebApplication.Checks;
 using WebApplication.Constants;
 using WebApplication.Helpers;
+using WebApplication.Models;
 
 namespace WebApplication.Controllers
 {
@@ -34,6 +34,11 @@ namespace WebApplication.Controllers
             _configuration = configuration;
         }
 
+        /// <summary>
+        /// Logins the user, checking the credentials provided and if successful, returns the JWT token
+        /// </summary>
+        /// <param name="model">Username and password</param>
+        /// <returns></returns>
         [HttpPost("login")]
         public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest model)
         {
@@ -63,6 +68,11 @@ namespace WebApplication.Controllers
             };
         }
 
+        /// <summary>
+        /// Register a new user with data provided within the user role
+        /// </summary>
+        /// <param name="model">Basic data for user(username, email, password)</param>
+        /// <returns></returns>
         [HttpPost("register")]
         public async Task<ActionResult<UserDto>> Register([FromBody] RegisterRequest model)
         {
@@ -74,16 +84,19 @@ namespace WebApplication.Controllers
                 SecurityStamp = Guid.NewGuid().ToString(),
                 UserName = model.Username
             };
-            
+
             var result = await _userManager.CreateAsync(user, model.Password);
 
             await EnsureRolesExists();
             await _userManager.AddToRoleAsync(user, UserRoles.User);
-            
+
             Check.Guard(result.Succeeded, "Creating the user was unsuccessful");
             return user.Serialize(serializeRequests: false);
         }
 
+        /// <summary>
+        /// Check, whether all existing roles are created
+        /// </summary>
         private async Task EnsureRolesExists()
         {
             if (await _roleManager.RoleExistsAsync(UserRoles.User))

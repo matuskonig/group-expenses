@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using Entities.Dto.General;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
 using WebApplication.Exceptions;
 
@@ -20,6 +19,10 @@ namespace WebApplication.Middlewares
             _hostEnvironment = hostEnvironment;
         }
 
+        /// <summary>
+        /// Middleware pipeline processor, top-level catch block
+        /// </summary>
+        /// <param name="context">Request context</param>
         public async Task InvokeAsync(HttpContext context)
         {
             try
@@ -32,6 +35,11 @@ namespace WebApplication.Middlewares
             }
         }
 
+        /// <summary>
+        /// Exception handler, writes ProblemDetail with exception detail as the API response
+        /// </summary>
+        /// <param name="context">Request context</param>
+        /// <param name="exception">Exception thrown down the pipeline</param>
         private async Task HandleThrownException(HttpContext context, Exception exception)
         {
             var statusCode = exception is HttpResponseException responseException

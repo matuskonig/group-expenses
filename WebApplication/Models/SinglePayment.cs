@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations.Schema;
-using WebApplication.Authentication;
 
 namespace WebApplication.Models
 {
@@ -10,6 +9,10 @@ namespace WebApplication.Models
         public Guid Id { get; set; }
         public decimal Price { get; set; }
         public ApplicationUser Target { get; set; }
+        
+        /// <summary>
+        /// Navigation property to owning UnidirectionalPaymentGroup
+        /// </summary>
         public virtual UnidirectionalPaymentGroup PaymentGroup { get; set; }
     }
 }
