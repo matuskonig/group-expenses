@@ -39,6 +39,7 @@
 
     private IEnumerable<PaymentRecordDto> _currentUserGroupSettlement;
 
+    //Loads the group settlement and filters out transactions, which are not payments from the current user
     private async Task LoadGroupSettlement()
     {
         var data = await _groupService.GetGroupSettlement(Group);

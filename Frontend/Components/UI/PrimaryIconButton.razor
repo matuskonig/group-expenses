@@ -1,9 +1,9 @@
 ﻿<PrimaryButton @attributes="@ButtonAttributes">
-    <i class="oi @Icon"></i>
+    <Icon IconName="@Icon"/>
 </PrimaryButton>
 
 @code {
-
+    // HTML attributes, which are viable for this button
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object> ButtonAttributes { get; set; }
 

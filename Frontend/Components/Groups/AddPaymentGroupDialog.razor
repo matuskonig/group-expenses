@@ -19,7 +19,7 @@
     OnGroupNameChange="@HandleGroupNameChange"/>
 
 @code {
-
+    // Owning payment group
     [Parameter]
     public SinglePurposeUserGroupDto Group { get; set; }
 
@@ -40,6 +40,7 @@
         PaymentTargets = Enumerable.Empty<SinglePaymentDto>()
     };
 
+    // Creates a new UnidirectionalPaymentGroup and appends it to the SinglePurposePaymentGroup
     private async Task HandleSubmit()
     {
         await _groupService.ModifyUserGroup(new SinglePurposeUserGroupDto

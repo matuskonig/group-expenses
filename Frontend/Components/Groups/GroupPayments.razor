@@ -24,14 +24,4 @@
     [Parameter]
     public SinglePurposeUserGroupDto Group { get; set; }
 
-    private async Task HandleRemovePayment(UnidirectionalPaymentGroupDto paymentGroup)
-    {
-        await _groupService.ModifyUserGroup(new SinglePurposeUserGroupDto
-        {
-            Id = Group.Id,
-            GroupPayments = Group.GroupPayments.Where(group => group != paymentGroup)
-        });
-        await _groupService.LoadAll();
-    }
-
 }

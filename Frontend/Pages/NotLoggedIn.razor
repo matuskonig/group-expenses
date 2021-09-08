@@ -1,4 +1,5 @@
-﻿@using Frontend.Components.UI
+﻿@* Page used as fallback, when user is not logged in *@
+@using Frontend.Components.UI
 @inject NavigationManager _navigationManager
 
 <div class="container">
@@ -7,7 +8,7 @@
 </div>
 
 @code {
-
+    
     private void NavigateToLogin()
     {
         _navigationManager.NavigateTo("Login");

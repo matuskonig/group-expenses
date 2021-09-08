@@ -12,8 +12,10 @@
     [Parameter]
     public RenderFragment ChildContent { get; set; }
 
+    // Returns the data provided by the service
     public IEnumerable<SinglePurposeUserGroupDto> UserGroups => _groupService.UserGroups;
 
+    // Subscription to data change
     protected override void OnInitialized()
     {
         _groupService.OnChange += StateHasChanged;

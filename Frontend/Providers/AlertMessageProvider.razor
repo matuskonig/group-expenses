@@ -12,6 +12,7 @@
 
 @code {
 
+    // Subscription to service data changes
     protected override void OnInitialized()
     {
         _alertMessageService.OnChange += StateHasChanged;

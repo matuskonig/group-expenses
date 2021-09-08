@@ -58,6 +58,7 @@
     [Parameter]
     public UnidirectionalPaymentGroupDto PaymentGroup { get; set; }
 
+    // Returns the users, which are different from the payer user (payment from me to myself does not make sense etc.)
     private IEnumerable<UserDto> GetPossibleUsers()
     {
         return Group?.GroupUsers?.Where(user => user.Id != PaymentGroup?.PaymentBy?.Id);
@@ -67,6 +68,7 @@
 
     protected override void OnInitialized()
     {
+    // In case the model is provided, use it as data source
         if (SinglePayment != null)
             _model = SinglePayment;
     }
@@ -76,6 +78,7 @@
         _model.Target = user;
     }
 
+    //Send the data to the handler    
     private async Task HandleSubmit(OpenableDialog dialogContext)
     {
         await OnSubmit.InvokeAsync(_model);

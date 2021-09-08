@@ -8,14 +8,22 @@ using Frontend.Extensions;
 
 namespace Frontend.Services
 {
+    /// <summary>
+    /// Service used to manage user login status, connected to CascadingValue
+    /// </summary>
     public class AuthApiService
     {
         public event Action OnChange;
 
         private readonly HttpClient _httpClient;
         private readonly AlertMessageService _alertMessageService;
+        
         private JwtSecurityToken _jwtSecurityToken;
 
+        /// <summary>
+        /// Token received from BE, if not null, user has succeeded with login
+        /// In any change in token, OnChanged handler is called
+        /// </summary>
         public JwtSecurityToken JwtSecurityToken
         {
             get => _jwtSecurityToken;

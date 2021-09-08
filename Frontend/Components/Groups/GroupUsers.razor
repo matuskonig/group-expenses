@@ -14,7 +14,7 @@
 
 <div class="mb-2">
     <UserSelectDialog
-        Icon="oi-plus"
+        Icon="@IconName.Plus"
         DialogTitle="Add user"
         Users="@GetPossibleNewUsers()"
         OnSubmit="@HandleAddNewFriend"/>
@@ -41,16 +41,16 @@
 
     private PropertyEqualityComparer<UserDto, string> _userComparer = new(user => user.Id);
 
-    private async Task RemoveUserFromGroup(UserDto userDto) {
+    private async Task RemoveUserFromGroup(UserDto userDto)
+    {
         await _groupService.ModifyUserGroup(new SinglePurposeUserGroupDto
         {
             Id = Group.Id,
-            GroupUsers = Group.GroupUsers
-                .Except(new[] { userDto }, _userComparer)
+            GroupUsers = Group.GroupUsers.Except(new[] { userDto }, _userComparer)
         });
         await _groupService.LoadAll();
     }
-    
+
     private IEnumerable<UserDto> GetPossibleNewUsers()
     {
         return CurrentUserProvider

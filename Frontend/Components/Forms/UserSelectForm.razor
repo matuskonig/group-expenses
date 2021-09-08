@@ -9,9 +9,11 @@
         <div>
             <label for="userSelect">User: </label>
             <InputSelect id="userSelect" @bind-Value="@_model.SelectedUserId">
+                @* empty (null) option *@
                 <option value=""></option>
                 @foreach (var user in Users)
                 {
+                    // Workaround with user.Id due to incapability to use the user object directly
                     <option value="@user.Id">@user.UserName</option>
                 }
             </InputSelect>
@@ -23,6 +25,7 @@
 
 @code {
 
+    // Event handler consuming selected user
     [Parameter]
     public EventCallback<UserDto> OnSubmit { get; set; }
 
@@ -37,6 +40,7 @@
 
     private FormModel _model = new();
 
+    // Pass the selected user to the handler
     private async Task HandleSubmit()
     {
         var user = Users.FirstOrDefault(user => user.Id == _model.SelectedUserId);
@@ -45,6 +49,7 @@
 
     protected override void OnInitialized()
     {
+        // Case for updating fields, where user is already preselected
         if (SelectedUserId != null)
         {
             _model.SelectedUserId = SelectedUserId;

@@ -15,13 +15,18 @@
     [CascadingParameter]
     public AuthStateProvider AuthStateProvider { get; set; }
 
-    private RouteData _notFoundRouteData = new(typeof(NotLoggedIn), new Dictionary<string, object>());
-    private RouteData GetViewRouteData() => IsAuthorized() ? RouteData : _notFoundRouteData;
+    private static RouteData routeNotFoundData = new(typeof(NotLoggedIn), new Dictionary<string, object>());
 
+    private RouteData GetViewRouteData() => IsAuthorized() ? RouteData : routeNotFoundData;
+
+    // Check, whether the user is authorized to see the page
+    // Page is considered to be auth only when it contains [Authorize] attribute
+    // If the page does not contain such attribute, the user is automatically authorized to render the page
     private bool IsAuthorized()
     {
         var pageType = RouteData.PageType;
-        if (Attribute.GetCustomAttribute(pageType, typeof(AuthorizeAttribute)) is AuthorizeAttribute)
+        var attribute = Attribute.GetCustomAttribute(pageType, typeof(AuthorizeAttribute));
+        if (attribute is AuthorizeAttribute)
         {
             return AuthStateProvider.IsLoggedIn;
         }

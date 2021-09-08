@@ -22,11 +22,13 @@
     private IEnumerable<UserDto> _foundUsers;
     private FormModel _model = new();
 
+    // Loads the data when the dialog is opened, passing the users to the component
     private async Task HandleOpen()
     {
         _foundUsers = await _userApiService.SearchFriendByName(_model.UserName);
     }
 
+    // When user is selected, send the friend request
     private async Task SendRequest(UserDto user)
     {
         await _userApiService.SendNewFriendRequest(user);

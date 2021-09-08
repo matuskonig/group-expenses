@@ -22,6 +22,7 @@
     [Parameter]
     public UnidirectionalPaymentGroupDto PaymentGroup { get; set; }
 
+    // Callback to handle payment group with changed name (model itself contains just the name)
     [Parameter]
     public EventCallback<UnidirectionalPaymentGroupDto> OnSubmit { get; set; }
 

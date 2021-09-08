@@ -19,6 +19,7 @@
         _values = new FormValues();
     }
 
+    // Creates a new group with the user as a single member
     private async Task OnSubmit()
     {
         await _groupService.AddNewGroup(_values.Name);

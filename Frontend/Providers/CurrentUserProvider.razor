@@ -12,8 +12,11 @@
     [Parameter]
     public RenderFragment ChildContent { get; set; }
 
+    // Provides current user, so individual components consuming the data does not need to connect to the service
+    // directly and will be updated according to this cascading value
     public UserDto CurrentUser => _userApiService.CurrentUser;
 
+    // Subscription to changes in data provided by service
     protected override void OnInitialized()
     {
         _userApiService.OnChange += StateHasChanged;
