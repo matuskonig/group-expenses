@@ -1,11 +1,9 @@
 ﻿using System;
-using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Entities.Dto.AuthDto;
 using Frontend.Extensions;
-
 namespace Frontend.Services
 {
     /// <summary>
@@ -18,18 +16,18 @@ namespace Frontend.Services
         private readonly HttpClient _httpClient;
         private readonly AlertMessageService _alertMessageService;
         
-        private JwtSecurityToken _jwtSecurityToken;
+        private LoginResponse _loginResponse;
 
         /// <summary>
         /// Token received from BE, if not null, user has succeeded with login
         /// In any change in token, OnChanged handler is called
         /// </summary>
-        public JwtSecurityToken JwtSecurityToken
+        public LoginResponse LoginResponse
         {
-            get => _jwtSecurityToken;
+            get => _loginResponse;
             private set
             {
-                _jwtSecurityToken = value;
+                _loginResponse = value;
                 OnChange?.Invoke();
             }
         }
@@ -51,8 +49,9 @@ namespace Frontend.Services
             }
 
             var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
-            JwtSecurityToken = new JwtSecurityToken(result.Token);
+            
             _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {result.Token}");
+            LoginResponse = result;
             return true;
         }
 
@@ -65,7 +64,7 @@ namespace Frontend.Services
 
         public void Logout()
         {
-            JwtSecurityToken = null;
+            LoginResponse = null;
             _httpClient.DefaultRequestHeaders.Remove("Authorization");
         }
     }
