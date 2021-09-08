@@ -6,6 +6,7 @@
 <h3>Login</h3>
 
 <EditForm Model="@_model" OnValidSubmit="@HandleSubmit" class="max-content-container">
+    <DataAnnotationsValidator/>
     <ValidationSummary/>
     <div class="form-group">
         <label for="email">Email:&nbsp;</label>
