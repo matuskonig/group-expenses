@@ -14,7 +14,7 @@
     public RenderFragment ChildContent { get; set; }
 
     // Check token validity if is present, if the token is not present, false is returned
-    public bool IsLoggedIn => _authApiService.JwtSecurityToken?.ValidTo > DateTime.Now;
+    public bool IsLoggedIn => _authApiService.LoginResponse?.Expiration > DateTime.Now;
 
     public async Task Login(LoginRequest request)
     {
