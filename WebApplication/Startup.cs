@@ -28,7 +28,7 @@ namespace WebApplication
         {
             services.AddControllers();
             services.AddDbContext<ApplicationContext>(opt =>
-                opt.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
+                opt.UseNpgsql(Configuration.GetConnectionString("PostgreSql")));
             services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationContext>()
                 .AddDefaultTokenProviders();
@@ -58,7 +58,6 @@ namespace WebApplication
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "WebApplication", Version = "v1" });
             });
         }
-
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {

@@ -99,9 +99,9 @@ namespace WebApplication.Controllers
         /// </summary>
         private async Task EnsureRolesExists()
         {
-            if (await _roleManager.RoleExistsAsync(UserRoles.User))
+            if (!await _roleManager.RoleExistsAsync(UserRoles.User))
                 await _roleManager.CreateAsync(new IdentityRole(UserRoles.User));
-            if (await _roleManager.RoleExistsAsync(UserRoles.Admin))
+            if (!await _roleManager.RoleExistsAsync(UserRoles.Admin))
                 await _roleManager.CreateAsync(new IdentityRole(UserRoles.Admin));
         }
     }
