@@ -75,7 +75,7 @@ Third part is the user managment. Data are structured in 3 layers. First layer i
 which sets the lifetime boundaries of the group. This group is named, contain the group members and collection of underlying payment structure. Second layer is 
 `UnidirectionalPaymentGroup`, which stands for a single payment reason (payment for the gasoline...). This group is also named, contains the person, who paid the transaction and  and the list of
 payment targets (`SinglePayment`). From this setup, group settlement can be
-calculated as the list of transactions, which when executed, people will not ove money to the other group members.
+calculated as the list of transactions, which when executed, people will not owe money to the other group members.
 
 ![Group example](assets/example.png)
 
