@@ -77,10 +77,6 @@ which sets the lifetime boundaries of the group. This group is named, contain th
 payment targets (`SinglePayment`). From this setup, group settlement can be
 calculated as the list of transactions, which when executed, people will not ove money to the other group members.
 
-Third part is the group managment. User can create group and add his friends into the group.
-User can also add, modify and remove payment groups. Payment group is a named group, which represents payment from one user to eventually multiple other users.
-Finally, user can calculate group settlement, which consists of payments, which when taken place, every person in the group will be even with other persons.
-
 ![Group example](assets/example.png)
 
 
