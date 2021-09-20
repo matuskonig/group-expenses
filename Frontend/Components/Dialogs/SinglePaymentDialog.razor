@@ -28,7 +28,7 @@
                         SelectedUserId="@_model?.Target?.Id"
                         DialogTitle="Select payment target"
                         Icon="@IconName.Pencil"
-                        Users="@GetPossibleUsers()"
+                        Users="@Group.GroupUsers"
                         OnSubmit="@ModelTargetChanged"/>
                 </div>
             </dd>
@@ -57,12 +57,6 @@
 
     [Parameter]
     public UnidirectionalPaymentGroupDto PaymentGroup { get; set; }
-
-    // Returns the users, which are different from the payer user (payment from me to myself does not make sense etc.)
-    private IEnumerable<UserDto> GetPossibleUsers()
-    {
-        return Group?.GroupUsers?.Where(user => user.Id != PaymentGroup?.PaymentBy?.Id);
-    }
 
     private SinglePaymentDto _model = new();
 
